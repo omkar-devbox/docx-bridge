@@ -33,7 +33,7 @@ def save_json(data, filepath):
         json.dump(
             data,
             file,
-            indent=4,
+            indent=2,
             ensure_ascii=False,
         )
 

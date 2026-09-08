@@ -11,12 +11,19 @@ from parser.json_to_xml import JsonToXmlParser
 from utils.json import dump_json, load_json
 
 
-def docx_to_json(docx_path: Path, output_path: Path) -> None:
-    """Convert a .docx file to JSON representation."""
+def docx_to_json(docx_path: Path, output_path: Path, mode: str = "simple") -> None:
+    """Convert a .docx file to JSON representation.
+    
+    Args:
+        docx_path: Path to the .docx source file.
+        output_path: Path to write the output .json file.
+        mode: 'simple' for clean, compact, AI-friendly JSON (default);
+              'raw' for full OpenXML schema mapping.
+    """
     with DocxReader(docx_path) as reader:
         parser = XmlToJsonParser()
         doc_xml = reader.get_document_xml()
-        data = parser.parse_document(doc_xml)
+        data = parser.parse_document(doc_xml, mode=mode)
 
         styles_xml = reader.get_styles_xml()
         if styles_xml:
@@ -154,6 +161,12 @@ def main() -> None:
     to_json_cmd = subparsers.add_parser("docx-to-json", help="Convert .docx to .json")
     to_json_cmd.add_argument("input", type=Path, help="Path to source .docx file")
     to_json_cmd.add_argument("-o", "--output", type=Path, required=True, help="Path to output .json file")
+    to_json_cmd.add_argument(
+        "-m", "--mode",
+        choices=["simple", "raw"],
+        default="simple",
+        help="Output mode: 'simple' for concise AI-friendly JSON, 'raw' for detailed OpenXML mapping (default: simple)"
+    )
 
     # json-to-docx command
     to_docx_cmd = subparsers.add_parser("json-to-docx", help="Convert .json to .docx")
@@ -164,7 +177,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "docx-to-json":
-        docx_to_json(args.input, args.output)
+        docx_to_json(args.input, args.output, mode=args.mode)
     elif args.command == "json-to-docx":
         json_to_docx(args.input, args.output, args.template)
     else:

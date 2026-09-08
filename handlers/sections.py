@@ -43,7 +43,6 @@ class SectionsHandler(BaseHandler):
                 val = pg_mar.attrib.get(qn(attr))
                 if val is not None:
                     margins[key] = int(val) if val.isdigit() else val
-            result[self.tag_to_name("w:pgMar")] = margins
             result["margins"] = margins
 
         # Columns (w:cols -> columns)
@@ -58,7 +57,6 @@ class SectionsHandler(BaseHandler):
                 col_list.append(c_dict)
             if col_list:
                 cols_dict["columns"] = col_list
-            result[self.tag_to_name("w:cols")] = cols_dict
             result["columns"] = cols_dict
 
         # Section Type (w:type -> sectionType)

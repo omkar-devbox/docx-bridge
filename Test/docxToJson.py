@@ -10,22 +10,34 @@ import sys
 from pathlib import Path
 
 # Ensure project root is in sys.path
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent  # Test/ -> project root
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from main import docx_to_json
 
 # ==============================================================================
-# FILE PATH CONFIGURATION (फाईलचा पाथ इथे बदला)
+# FILE PATH & MODE CONFIGURATION (फाईलचा पाथ आणि मोड इथे बदला)
 # ==============================================================================
+# MODE: 'simple' = Clean, compact, developer-friendly JSON (default)
+#       'raw'    = Full OpenXML mapping with all properties nested
+MODE = "simple"
 FILE_PATH = PROJECT_ROOT / "Test" / "TestFiled" / "sample.docx"
 # ==============================================================================
 
 
 def run():
-    # If user provided a path via CLI argument, use it; otherwise use FILE_PATH
-    input_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(FILE_PATH)
+    mode = MODE
+    # Parse CLI arguments if provided
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    flags = [a for a in sys.argv[1:] if a.startswith("--")]
+
+    if "--raw" in flags:
+        mode = "raw"
+    elif "--simple" in flags:
+        mode = "simple"
+
+    input_path = Path(args[0]) if args else Path(FILE_PATH)
 
     if not input_path.is_absolute():
         input_path = (PROJECT_ROOT / input_path).resolve()
@@ -38,11 +50,11 @@ def run():
     # Output file in the SAME folder with .json extension
     output_path = input_path.with_suffix(".json")
 
-    print(f"⏳ Converting DOCX to JSON...")
+    print(f"⏳ Converting DOCX to JSON (Mode: {mode})...")
     print(f"📁 Input DOCX : {input_path}")
     print(f"📁 Output JSON: {output_path}")
 
-    docx_to_json(input_path, output_path)
+    docx_to_json(input_path, output_path, mode=mode)
 
     print(f"✅ Successfully converted! JSON saved in same folder:")
     print(f"👉 {output_path}")
