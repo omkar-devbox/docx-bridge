@@ -19,7 +19,7 @@ from main import json_to_docx
 # ==============================================================================
 # FILE PATH CONFIGURATION (फाईलचा पाथ इथे बदला)
 # ==============================================================================
-FILE_PATH = PROJECT_ROOT / "Test" / "TestFiled" / "sample.json"
+FILE_PATH = PROJECT_ROOT / "Test" / "files" / "Apurva Jhunjhunwala.json"
 # ==============================================================================
 
 
@@ -29,6 +29,19 @@ def run():
 
     if not input_path.is_absolute():
         input_path = (PROJECT_ROOT / input_path).resolve()
+
+    # If user passed a .docx file instead of .json, check if corresponding .json exists
+    if input_path.suffix.lower() == ".docx":
+        corresponding_json = input_path.with_suffix(".json")
+        if corresponding_json.exists():
+            print(f"⚠️ Notice: DOCX file path was provided. Automatically switching to corresponding JSON:")
+            print(f"   {corresponding_json}")
+            input_path = corresponding_json
+        else:
+            print(f"❌ Error: Expected a .json file, but got a .docx file: {input_path.name}")
+            print(f"Corresponding JSON not found at: {corresponding_json}")
+            print(f"Please run docxToJson.py first to generate the JSON.")
+            sys.exit(1)
 
     if not input_path.exists():
         print(f"❌ Error: JSON file not found at: {input_path}")

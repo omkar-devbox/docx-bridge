@@ -22,7 +22,7 @@ from main import docx_to_json
 # MODE: 'simple' = Clean, compact, developer-friendly JSON (default)
 #       'raw'    = Full OpenXML mapping with all properties nested
 MODE = "simple"
-FILE_PATH = PROJECT_ROOT / "Test" / "TestFiled" / "sample.docx"
+FILE_PATH = PROJECT_ROOT / "Test" / "files" / "Apurva Jhunjhunwala.docx"
 # ==============================================================================
 
 
@@ -41,6 +41,11 @@ def run():
 
     if not input_path.is_absolute():
         input_path = (PROJECT_ROOT / input_path).resolve()
+
+    if input_path.suffix.lower() == ".json":
+        print(f"❌ Error: Expected a .docx file, but got a .json file: {input_path.name}")
+        print(f"Did you mean to run Test/jsonToDocx.py instead?")
+        sys.exit(1)
 
     if not input_path.exists():
         print(f"❌ Error: File not found at: {input_path}")

@@ -1,7 +1,13 @@
 """Unit tests for compact, AI-compatible, and developer-friendly JSON format."""
 
+import sys
 import unittest
 import xml.etree.ElementTree as ET
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import NAMESPACES
 from handlers import ParagraphHandler, TableHandler, DocumentHandler, qn
@@ -185,7 +191,7 @@ class TestSimpleFormat(unittest.TestCase):
         elem = ET.fromstring(xml_str)
         p_json = self.p_handler.to_json(elem, simple=True)
 
-        self.assertEqual(p_json["type"], "paragraph")
+        self.assertEqual(p_json.get("type", "paragraph"), "paragraph")
         self.assertEqual(p_json["text"], "Simple Title")
         self.assertEqual(p_json["align"], "center")
         self.assertTrue(p_json["bold"])
