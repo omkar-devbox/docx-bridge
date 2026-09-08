@@ -1,0 +1,94 @@
+{
+  "word": {
+    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+    "w14": "http://schemas.microsoft.com/office/word/2010/wordml",
+    "w15": "http://schemas.microsoft.com/office/word/2012/wordml",
+    "w16cid": "http://schemas.microsoft.com/office/word/2016/wordml/cid",
+    "w16se": "http://schemas.microsoft.com/office/word/2015/wordml/symex",
+    "w16sdtdh": "http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash",
+    "w16cex": "http://schemas.microsoft.com/office/word/2018/wordml/cex",
+    "wne": "http://schemas.microsoft.com/office/word/2006/wordml"
+  },
+  "package": {
+    "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+    "rel": "http://schemas.openxmlformats.org/package/2006/relationships",
+    "ct": "http://schemas.openxmlformats.org/package/2006/content-types"
+  },
+  "drawing": {
+    "wp": "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing",
+    "wp14": "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing",
+    "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+    "a14": "http://schemas.microsoft.com/office/drawing/2010/main",
+    "a15": "http://schemas.microsoft.com/office/drawing/2012/main"
+  },
+  "images": {
+    "pic": "http://schemas.openxmlformats.org/drawingml/2006/picture",
+    "asvg": "http://schemas.microsoft.com/office/drawing/2016/SVG/main"
+  },
+  "charts": {
+    "c": "http://schemas.openxmlformats.org/drawingml/2006/chart",
+    "cdr": "http://schemas.openxmlformats.org/drawingml/2006/chartDrawing",
+    "cx": "http://schemas.microsoft.com/office/drawing/2014/chartex",
+    "cx1": "http://schemas.microsoft.com/office/drawing/2015/9/8/chartex",
+    "cx2": "http://schemas.microsoft.com/office/drawing/2015/10/21/chartex",
+    "cx3": "http://schemas.microsoft.com/office/drawing/2016/5/10/chartex",
+    "cx4": "http://schemas.microsoft.com/office/drawing/2016/5/14/chartex"
+  },
+  "diagrams": {
+    "dgm": "http://schemas.openxmlformats.org/drawingml/2006/diagram",
+    "dgm14": "http://schemas.microsoft.com/office/drawing/2010/diagram",
+    "dsp": "http://schemas.microsoft.com/office/drawing/2008/diagram"
+  },
+  "canvas": {
+    "lc": "http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas",
+    "aink": "http://schemas.microsoft.com/office/drawing/2016/ink",
+    "inkml": "http://www.w3.org/2003/InkML"
+  },
+  "models_3d": {
+    "am3d": "http://schemas.microsoft.com/office/drawing/2017/model3d"
+  },
+  "legacy": {
+    "v": "urn:schemas-microsoft-com:vml",
+    "o": "urn:schemas-microsoft-com:office:office",
+    "w10": "urn:schemas-microsoft-com:office:word",
+    "comp": "http://schemas.openxmlformats.org/drawingml/2006/compatibility",
+    "mc": "http://schemas.openxmlformats.org/markup-compatibility/2006",
+    "sl": "http://schemas.openxmlformats.org/schemaLibrary/2006/main"
+  },
+  "math": {
+    "m": "http://schemas.openxmlformats.org/officeDocument/2006/math"
+  },
+  "metadata": {
+    "cp": "http://schemas.openxmlformats.org/package/2006/metadata/core-properties",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "ep": "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties",
+    "vt": "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes",
+    "cppr": "http://schemas.microsoft.com/office/2006/coverPageProps"
+  },
+  "shapes": {
+    "wps": "http://schemas.microsoft.com/office/word/2010/wordprocessingShape",
+    "wpg": "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup",
+    "wpc": "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+  },
+  "data": {
+    "ds": "http://schemas.openxmlformats.org/officeDocument/2006/customXml"
+  },
+  "references": {
+    "b": "http://schemas.openxmlformats.org/officeDocument/2006/bibliography"
+  },
+  "themes": {
+    "thm15": "http://schemas.microsoft.com/office/thememl/2012/main"
+  },
+  "xml": {
+    "xml": "http://www.w3.org/XML/1998/namespace",
+    "xsi": "http://www.w3.org/2001/XMLSchema-instance"
+  },
+  "addons": {
+    "we": "http://schemas.microsoft.com/office/webextensions/webextension/2010/11",
+    "wetp": "http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11"
+  },
+  "security": {
+    "dsig": "http://www.w3.org/2000/09/xmldsig#"
+  }
+}
