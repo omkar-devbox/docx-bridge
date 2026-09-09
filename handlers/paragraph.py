@@ -156,6 +156,8 @@ class ParagraphHandler(BaseHandler):
                 result["spacing"] = paragraph_properties["spacing"]
             if "numbering" in paragraph_properties:
                 result["numbering"] = paragraph_properties["numbering"]
+                if "level" in paragraph_properties["numbering"]:
+                    result["level"] = paragraph_properties["numbering"]["level"]
             if paragraph_properties.get("pageBreakBefore"):
                 result["pageBreakBefore"] = True
             if paragraph_properties.get("shading"):
@@ -195,12 +197,19 @@ class ParagraphHandler(BaseHandler):
         p = ET.Element(qn("w:p"))
         props = dict(data.get("paragraphProperties") or data.get("properties") or {})
 
+        # If item type is bullet/list_item, default bullet to True
+        item_type = data.get("type", "")
+        if item_type in ("bullet", "list_item", "listItem"):
+            if "bullet" not in props:
+                props["bullet"] = True
+
         # Collect flat properties on data directly
         for k in (
             "alignment", "align", "indentation", "indent", "spacing",
             "style", "pStyle", "heading", "bullet", "pageBreakBefore",
             "pageBreak", "keepNext", "keepWithNext", "shading",
-            "tabs", "markProperties", "numbering"
+            "tabs", "markProperties", "numbering", "level", "ilvl",
+            "list", "numbered", "number"
         ):
             if k in data and k not in props:
                 props[k] = data[k]
@@ -267,18 +276,79 @@ class ParagraphHandler(BaseHandler):
                     t_attrs = {qn(f"w:{k}"): str(v) for k, v in t_data.items()}
                     ET.SubElement(tabs_el, qn("w:tab"), t_attrs)
 
-            # Numbering properties or bullet shorthand
+            # Numbering properties, bullet shorthand, or list shorthand
             num_data = props.get("numberingProperties") or props.get("numbering")
+            list_data = props.get("list")
+            bullet_data = props.get("bullet")
+
             if num_data and isinstance(num_data, dict):
+                ilvl_val = num_data.get("indentationLevel") if num_data.get("indentationLevel") is not None else num_data.get("level", props.get("level", props.get("ilvl", 0)))
+                num_id_val = num_data.get("numberingId") if num_data.get("numberingId") is not None else num_data.get("id")
+                if num_id_val is None:
+                    fmt = str(num_data.get("format") or num_data.get("type") or "").strip().lower()
+                    if fmt in (">", "arrow", "chevron"):
+                        num_id_val = 2
+                    elif fmt in ("decimal", "number", "numeric"):
+                        num_id_val = 3
+                    elif fmt in (".", "dot"):
+                        num_id_val = 4
+                    elif fmt in ("-", "dash", "hyphen"):
+                        num_id_val = 5
+                    else:
+                        num_id_val = 1
                 num_pr = ET.SubElement(p_pr, qn("w:numPr"))
-                ilvl_val = num_data.get("indentationLevel") if num_data.get("indentationLevel") is not None else num_data.get("level", 0)
                 ET.SubElement(num_pr, qn("w:ilvl"), {qn("w:val"): str(ilvl_val)})
-                num_id_val = num_data.get("numberingId") if num_data.get("numberingId") is not None else num_data.get("id", 1)
                 ET.SubElement(num_pr, qn("w:numId"), {qn("w:val"): str(num_id_val)})
-            elif props.get("bullet"):
+            elif list_data:
+                if isinstance(list_data, dict):
+                    ilvl_val = list_data.get("level", props.get("level", props.get("ilvl", 0)))
+                    l_type = str(list_data.get("type") or list_data.get("format") or list_data.get("bullet") or "").strip().lower()
+                else:
+                    ilvl_val = props.get("level", props.get("ilvl", 0))
+                    l_type = str(list_data).strip().lower() if not isinstance(list_data, bool) else ""
+
+                if l_type in (">", "arrow", "chevron", ">>", "›", "»", "➢", "➔", "→"):
+                    num_id_val = 2
+                elif l_type in ("decimal", "number", "numeric", "1."):
+                    num_id_val = 3
+                elif l_type in (".", "dot"):
+                    num_id_val = 4
+                elif l_type in ("-", "dash", "hyphen", "–", "—"):
+                    num_id_val = 5
+                else:
+                    num_id_val = 1
+
                 num_pr = ET.SubElement(p_pr, qn("w:numPr"))
-                ET.SubElement(num_pr, qn("w:ilvl"), {qn("w:val"): "0"})
-                ET.SubElement(num_pr, qn("w:numId"), {qn("w:val"): "1"})
+                ET.SubElement(num_pr, qn("w:ilvl"), {qn("w:val"): str(ilvl_val)})
+                ET.SubElement(num_pr, qn("w:numId"), {qn("w:val"): str(num_id_val)})
+            elif bullet_data is not None and bullet_data is not False:
+                if isinstance(bullet_data, dict):
+                    ilvl_val = bullet_data.get("level", props.get("level", props.get("ilvl", 0)))
+                    b_type = str(bullet_data.get("type") or bullet_data.get("format") or bullet_data.get("style") or "").strip().lower()
+                else:
+                    ilvl_val = props.get("level", props.get("ilvl", 0))
+                    b_type = str(bullet_data).strip().lower() if not isinstance(bullet_data, bool) else ""
+
+                if b_type in (">", "arrow", "chevron", ">>", "›", "»", "➢", "➔", "→"):
+                    num_id_val = 2
+                elif b_type in ("decimal", "number", "numeric", "1."):
+                    num_id_val = 3
+                elif b_type in (".", "dot"):
+                    num_id_val = 4
+                elif b_type in ("-", "dash", "hyphen", "–", "—"):
+                    num_id_val = 5
+                else:
+                    num_id_val = 1
+
+                num_pr = ET.SubElement(p_pr, qn("w:numPr"))
+                ET.SubElement(num_pr, qn("w:ilvl"), {qn("w:val"): str(ilvl_val)})
+                ET.SubElement(num_pr, qn("w:numId"), {qn("w:val"): str(num_id_val)})
+            elif props.get("numbered") or props.get("number"):
+                ilvl_val = props.get("level", props.get("ilvl", 0))
+                num_id_val = 3
+                num_pr = ET.SubElement(p_pr, qn("w:numPr"))
+                ET.SubElement(num_pr, qn("w:ilvl"), {qn("w:val"): str(ilvl_val)})
+                ET.SubElement(num_pr, qn("w:numId"), {qn("w:val"): str(num_id_val)})
 
             if props.get("keepWithNext") or props.get("keepNext"):
                 ET.SubElement(p_pr, qn("w:keepNext"))

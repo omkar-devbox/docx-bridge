@@ -95,7 +95,7 @@ class DocumentHandler(BaseHandler):
                 r = ET.SubElement(p, qn("w:r"))
                 ET.SubElement(r, qn("w:br"), {qn("w:type"): "page"})
                 body.append(p)
-            elif item_type in ("paragraph", "w:p", self.tag_to_name("w:p"), "p"):
+            elif item_type in ("paragraph", "w:p", self.tag_to_name("w:p"), "p", "bullet", "list_item", "listItem", "list"):
                 body.append(self.paragraph_handler.to_xml(item))
             elif item_type in ("table", "w:tbl", self.tag_to_name("w:tbl"), "tbl"):
                 body.append(self.table_handler.to_xml(item))

@@ -46,6 +46,41 @@ def docx_to_json(docx_path: Path, output_path: Path, mode: str = "simple") -> No
         print(f"Successfully converted '{docx_path}' -> '{output_path}'")
 
 
+def _has_list_or_numbering(data: dict[str, Any]) -> bool:
+    """Check whether JSON document contains list, bullet, or numbering elements."""
+    body = data.get("body", [])
+    if isinstance(body, dict):
+        body = body.get("content", [])
+    if not isinstance(body, list):
+        body = data.get("content", [])
+    if not isinstance(body, list):
+        return False
+
+    def check_item(item: Any) -> bool:
+        if not isinstance(item, dict):
+            return False
+        if item.get("type") in ("bullet", "list_item", "listItem", "list"):
+            return True
+        if item.get("bullet") or item.get("list") or item.get("numbering") or item.get("numbered") or item.get("number"):
+            return True
+        if "rows" in item and isinstance(item["rows"], list):
+            for row in item["rows"]:
+                if isinstance(row, list):
+                    for cell in row:
+                        if check_item(cell):
+                            return True
+                        if isinstance(cell, dict) and "content" in cell:
+                            for sub in cell.get("content", []):
+                                if check_item(sub):
+                                    return True
+        return False
+
+    for item in body:
+        if check_item(item):
+            return True
+    return False
+
+
 def json_to_docx(json_path: Path, output_path: Path, template_docx: Path | None = None) -> None:
     """Convert JSON representation back to a .docx file."""
     data = load_json(json_path)
@@ -56,6 +91,14 @@ def json_to_docx(json_path: Path, output_path: Path, template_docx: Path | None 
         candidate = json_path.with_suffix(".docx")
         if candidate.exists() and candidate.resolve() != output_path.resolve():
             template_docx = candidate
+
+    # Auto-provision numbering presets if document uses lists/bullets but has no numbering definition
+    if _has_list_or_numbering(data):
+        from handlers.numbering import NumberingHandler
+        if "numbering" not in data or not data["numbering"]:
+            data["numbering"] = NumberingHandler.build_default_numbering()
+        elif isinstance(data["numbering"], dict) and not data["numbering"].get("abstractNumbering"):
+            data["numbering"] = NumberingHandler.build_default_numbering()
 
     # Reconstruct or update archive
     with DocxWriter(output_path) as writer:
@@ -123,12 +166,38 @@ def json_to_docx(json_path: Path, output_path: Path, template_docx: Path | None 
                 rel_target = part_name[5:] if part_name.startswith("word/") else part_name
                 media_targets.add(rel_target)
 
-        if "relationships" in data:
-            raw_rels = data["relationships"]
-            # If no template was used, filter out internal relationships targeting non-existent parts
+        # Ensure document relationships exist and include numbering/styles/media
+        rels_list = list(data.get("relationships", []))
+        has_num_rel = any(r.get("target") == "numbering.xml" for r in rels_list)
+        has_style_rel = any(r.get("target") == "styles.xml" for r in rels_list)
+
+        used_ids = set()
+        for r in rels_list:
+            rid = str(r.get("id", ""))
+            if rid.startswith("rId") and rid[3:].isdigit():
+                used_ids.add(int(rid[3:]))
+        next_rid_num = max(used_ids, default=0) + 1
+
+        if "numbering" in data and not has_num_rel:
+            rels_list.append({
+                "id": f"rId{next_rid_num}",
+                "type": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering",
+                "target": "numbering.xml",
+            })
+            next_rid_num += 1
+
+        if "styles" in data and not has_style_rel:
+            rels_list.append({
+                "id": f"rId{next_rid_num}",
+                "type": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles",
+                "target": "styles.xml",
+            })
+            next_rid_num += 1
+
+        if rels_list:
             if not template_docx:
                 filtered_rels = []
-                for rel in raw_rels:
+                for rel in rels_list:
                     target = rel.get("target", "")
                     if rel.get("targetMode") == "External":
                         filtered_rels.append(rel)
@@ -142,7 +211,7 @@ def json_to_docx(json_path: Path, output_path: Path, template_docx: Path | None 
                         filtered_rels.append(rel)
                 rels_bytes = parser.build_relationships_xml(filtered_rels)
             else:
-                rels_bytes = parser.build_relationships_xml(raw_rels)
+                rels_bytes = parser.build_relationships_xml(rels_list)
             writer.write_part("word/_rels/document.xml.rels", rels_bytes)
 
         print(f"Successfully converted '{json_path}' -> '{output_path}'")
