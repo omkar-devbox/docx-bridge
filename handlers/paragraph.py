@@ -105,6 +105,25 @@ class ParagraphHandler(BaseHandler):
                     shd_dict[local_name(k)] = v
                 paragraph_properties["shading"] = shd_dict
 
+            # Typography and formatting flags
+            for tag_name in (
+                "autoSpaceDE",
+                "autoSpaceDN",
+                "adjustRightInd",
+                "snapToGrid",
+                "bidi",
+                "contextualSpacing",
+                "suppressLineNumbers",
+                "suppressAutoHyphens",
+            ):
+                el = p_pr.find(qn(f"w:{tag_name}"))
+                if el is not None:
+                    val = el.attrib.get(qn("w:val"))
+                    if val is not None:
+                        paragraph_properties[tag_name] = val not in ("0", "false", "off")
+                    else:
+                        paragraph_properties[tag_name] = True
+
             # Paragraph Mark Run Properties (w:rPr inside w:pPr)
             p_rpr = p_pr.find(qn("w:rPr"))
             if p_rpr is not None:
@@ -147,11 +166,7 @@ class ParagraphHandler(BaseHandler):
             if "alignment" in paragraph_properties:
                 result["align"] = paragraph_properties["alignment"]
             if "indentation" in paragraph_properties:
-                ind = paragraph_properties["indentation"]
-                if isinstance(ind, dict) and len(ind) == 1 and "left" in ind:
-                    result["indent"] = ind["left"]
-                else:
-                    result["indent"] = ind
+                result["indent"] = paragraph_properties["indentation"]
             if "spacing" in paragraph_properties:
                 result["spacing"] = paragraph_properties["spacing"]
             if "numbering" in paragraph_properties:
@@ -166,6 +181,20 @@ class ParagraphHandler(BaseHandler):
                 result["tabs"] = paragraph_properties["tabs"]
             if "markProperties" in paragraph_properties:
                 result["markProperties"] = paragraph_properties["markProperties"]
+
+            for k in (
+                "autoSpaceDE",
+                "autoSpaceDN",
+                "adjustRightInd",
+                "snapToGrid",
+                "bidi",
+                "contextualSpacing",
+                "suppressLineNumbers",
+                "suppressAutoHyphens",
+                "keepWithNext",
+            ):
+                if k in paragraph_properties:
+                    result[k] = paragraph_properties[k]
 
             # If single run with text and no complex media/hyperlinks, inline it directly
             if len(non_empty_runs) == 1 and not non_empty_runs[0].get("hyperlink") and not non_empty_runs[0].get("drawings") and not non_empty_runs[0].get("pictures"):
@@ -209,7 +238,9 @@ class ParagraphHandler(BaseHandler):
             "style", "pStyle", "heading", "bullet", "pageBreakBefore",
             "pageBreak", "keepNext", "keepWithNext", "shading",
             "tabs", "markProperties", "numbering", "level", "ilvl",
-            "list", "numbered", "number"
+            "list", "numbered", "number",
+            "autoSpaceDE", "autoSpaceDN", "adjustRightInd", "snapToGrid",
+            "bidi", "contextualSpacing", "suppressLineNumbers", "suppressAutoHyphens",
         ):
             if k in data and k not in props:
                 props[k] = data[k]
@@ -356,6 +387,28 @@ class ParagraphHandler(BaseHandler):
             if props.get("pageBreakBefore") or props.get("pageBreak"):
                 ET.SubElement(p_pr, qn("w:pageBreakBefore"))
 
+            # Typography and formatting flags
+            for tag_name in (
+                "autoSpaceDE",
+                "autoSpaceDN",
+                "adjustRightInd",
+                "snapToGrid",
+                "bidi",
+                "contextualSpacing",
+            ):
+                if tag_name in props:
+                    val = props[tag_name]
+                    if isinstance(val, bool):
+                        ET.SubElement(p_pr, qn(f"w:{tag_name}"), {qn("w:val"): "1" if val else "0"})
+                    elif val is not None:
+                        ET.SubElement(p_pr, qn(f"w:{tag_name}"), {qn("w:val"): str(val)})
+
+            if props.get("suppressLineNumbers"):
+                ET.SubElement(p_pr, qn("w:suppressLineNumbers"))
+
+            if props.get("suppressAutoHyphens"):
+                ET.SubElement(p_pr, qn("w:suppressAutoHyphens"))
+
             # Shading
             if props.get("shading"):
                 shd = props["shading"]
@@ -378,6 +431,9 @@ class ParagraphHandler(BaseHandler):
             if sect_data:
                 from handlers.sections import SectionsHandler
                 p_pr.append(SectionsHandler().to_xml(sect_data))
+
+            # Apply schema ordering
+            self.sort_children_by_schema(p_pr, "pPr")
         else:
             sect_data = data.get("sectionProperties") or data.get(self.tag_to_name("w:sectPr"))
             if sect_data:

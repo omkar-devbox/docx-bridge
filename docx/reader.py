@@ -1,66 +1,110 @@
-"""DOCX package reader extracting XML parts, media, and relationships from a .docx file."""
+# --------------------------------
+# Imports
+# --------------------------------
 
 import zipfile
 from pathlib import Path
 from typing import BinaryIO
 
 
+# --------------------------------
+# DOCX Reader
+# --------------------------------
+
 class DocxReader:
-    """Extracts internal components from a .docx OpenXML archive."""
 
     def __init__(self, source: str | Path | BinaryIO):
         self.source = source
-        self.archive = zipfile.ZipFile(source, "r")
+        self.archive = zipfile.ZipFile(
+            source,
+            "r",
+        )
+
+    # --------------------------------
+    # Package Parts
+    # --------------------------------
 
     def list_parts(self) -> list[str]:
-        """List all parts (file paths) inside the docx package."""
         return self.archive.namelist()
 
     def read_part(self, part_name: str) -> bytes:
-        """Read the raw bytes of a specific part."""
         return self.archive.read(part_name)
 
     def read_xml_part(self, part_name: str) -> str:
-        """Read a specific XML part as a UTF-8 string."""
         return self.archive.read(part_name).decode("utf-8")
 
+    # --------------------------------
+    # Main Document
+    # --------------------------------
+
     def get_document_xml(self) -> str:
-        """Read word/document.xml from the archive."""
-        return self.read_xml_part("word/document.xml")
+        return self.read_xml_part(
+            "word/document.xml",
+        )
+
+    # --------------------------------
+    # Styles
+    # --------------------------------
 
     def get_styles_xml(self) -> str | None:
-        """Read word/styles.xml if present."""
-        if "word/styles.xml" in self.archive.namelist():
-            return self.read_xml_part("word/styles.xml")
+        part_name = "word/styles.xml"
+
+        if part_name in self.archive.namelist():
+            return self.read_xml_part(part_name)
+
         return None
+
+    # --------------------------------
+    # Numbering
+    # --------------------------------
 
     def get_numbering_xml(self) -> str | None:
-        """Read word/numbering.xml if present."""
-        if "word/numbering.xml" in self.archive.namelist():
-            return self.read_xml_part("word/numbering.xml")
+        part_name = "word/numbering.xml"
+
+        if part_name in self.archive.namelist():
+            return self.read_xml_part(part_name)
+
         return None
+
+    # --------------------------------
+    # Relationships
+    # --------------------------------
 
     def get_relationships_xml(self) -> str | None:
-        """Read word/_rels/document.xml.rels if present."""
-        if "word/_rels/document.xml.rels" in self.archive.namelist():
-            return self.read_xml_part("word/_rels/document.xml.rels")
+        part_name = "word/_rels/document.xml.rels"
+
+        if part_name in self.archive.namelist():
+            return self.read_xml_part(part_name)
+
         return None
 
+    # --------------------------------
+    # Media
+    # --------------------------------
+
     def get_media(self) -> dict[str, bytes]:
-        """Read all embedded media assets from the archive."""
         media: dict[str, bytes] = {}
+
         for name in self.archive.namelist():
             if name.startswith("word/media/"):
                 media[name] = self.archive.read(name)
+
         return media
 
+    # --------------------------------
+    # Archive Lifecycle
+    # --------------------------------
 
     def close(self) -> None:
-        """Close the zip archive."""
         self.archive.close()
 
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type,
+        exc_val,
+        exc_tb,
+    ):
         self.close()

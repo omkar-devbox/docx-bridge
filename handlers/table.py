@@ -1,578 +1,2165 @@
-"""Handler for w:tbl (table) elements."""
-
 from typing import Any
 import xml.etree.ElementTree as ET
+
 from handlers.base import BaseHandler, qn, local_name
 from handlers.paragraph import ParagraphHandler
 
 
+# --------------------------------
+# Table Handler
+# --------------------------------
+
 class TableHandler(BaseHandler):
-    """Handles w:tbl table element conversion to/from JSON."""
 
-    def __init__(self, paragraph_handler: ParagraphHandler | None = None):
-        self.paragraph_handler = paragraph_handler or ParagraphHandler()
+    def __init__(
+        self,
+        paragraph_handler: ParagraphHandler | None = None,
+    ):
+        self.paragraph_handler = (
+            paragraph_handler
+            or ParagraphHandler()
+        )
 
-    def to_json(self, element: ET.Element, simple: bool = False) -> dict[str, Any]:
-        """Convert w:tbl element to JSON dictionary with master-tags values as keys."""
+    # --------------------------------
+    # JSON Conversion
+    # --------------------------------
+
+    def to_json(
+        self,
+        element: ET.Element,
+        simple: bool = False,
+    ) -> dict[str, Any]:
+
         table_properties: dict[str, Any] = {}
-        tbl_pr = element.find(qn("w:tblPr"))
+
+        tbl_pr = (
+            element
+            if element.tag == qn("w:tblPr")
+            else element.find(qn("w:tblPr"))
+        )
+
+        # --------------------------------
+        # Table Properties
+        # --------------------------------
+
         if tbl_pr is not None:
+
+            # --------------------------------
             # Table Style
-            tbl_style = tbl_pr.find(qn("w:tblStyle"))
+            # --------------------------------
+
+            tbl_style = tbl_pr.find(
+                qn("w:tblStyle")
+            )
+
             if tbl_style is not None:
-                table_properties["style"] = tbl_style.attrib.get(qn("w:val"), "")
+                table_properties["style"] = (
+                    tbl_style.attrib.get(
+                        qn("w:val"),
+                        "",
+                    )
+                )
 
+            # --------------------------------
             # Table Width
-            tbl_w = tbl_pr.find(qn("w:tblW"))
-            if tbl_w is not None:
-                w_val = tbl_w.attrib.get(qn("w:w"), "")
-                width_dict = {
-                    "value": int(w_val) if w_val.isdigit() else w_val,
-                    "type": tbl_w.attrib.get(qn("w:type"), "auto"),
+            # --------------------------------
+
+            tbl_width = tbl_pr.find(
+                qn("w:tblW")
+            )
+
+            if tbl_width is not None:
+                width_value = tbl_width.attrib.get(
+                    qn("w:w"),
+                    "",
+                )
+
+                width_data = {
+                    "value": (
+                        int(width_value)
+                        if width_value.isdigit()
+                        else width_value
+                    ),
+                    "type": tbl_width.attrib.get(
+                        qn("w:type"),
+                        "auto",
+                    ),
                 }
-                table_properties["width"] = width_dict
 
-            # Alignment
-            jc = tbl_pr.find(qn("w:jc"))
-            if jc is not None:
-                table_properties["alignment"] = jc.attrib.get(qn("w:val"), "")
+                table_properties["width"] = width_data
 
-            # Floating Table Position Properties (w:tblpPr)
-            tblp_pr = tbl_pr.find(qn("w:tblpPr"))
-            if tblp_pr is not None:
-                tblp_dict: dict[str, Any] = {}
-                for k, v in tblp_pr.attrib.items():
-                    key = local_name(k)
-                    val = int(v) if v.isdigit() or (v.startswith("-") and v[1:].isdigit()) else v
-                    tblp_dict[key] = val
-                table_properties["positionProperties"] = tblp_dict
+            # --------------------------------
+            # Table Alignment
+            # --------------------------------
 
-            # Table Cell Margins (w:tblCellMar)
-            tbl_cell_mar = tbl_pr.find(qn("w:tblCellMar"))
-            if tbl_cell_mar is not None:
-                mar_dict: dict[str, Any] = {}
-                for side in ("top", "left", "bottom", "right"):
-                    side_el = tbl_cell_mar.find(qn(f"w:{side}"))
-                    if side_el is not None:
-                        w_val = side_el.attrib.get(qn("w:w"), "0")
-                        mar_dict[side] = {
-                            "value": int(w_val) if w_val.isdigit() else w_val,
-                            "type": side_el.attrib.get(qn("w:type"), "dxa"),
-                        }
-                if mar_dict:
-                    table_properties["cellMargins"] = mar_dict
+            alignment = tbl_pr.find(
+                qn("w:jc")
+            )
 
-            # Table Cell Spacing (w:tblCellSpacing)
-            tbl_spacing = tbl_pr.find(qn("w:tblCellSpacing"))
-            if tbl_spacing is not None:
-                w_val = tbl_spacing.attrib.get(qn("w:w"), "")
-                sp_dict = {
-                    "value": int(w_val) if w_val.isdigit() else w_val,
-                    "type": tbl_spacing.attrib.get(qn("w:type"), "dxa"),
-                }
-                table_properties["cellSpacing"] = sp_dict
+            if alignment is not None:
+                table_properties["alignment"] = (
+                    alignment.attrib.get(
+                        qn("w:val"),
+                        "",
+                    )
+                )
 
-            # Table Indent (w:tblInd)
-            tbl_ind = tbl_pr.find(qn("w:tblInd"))
-            if tbl_ind is not None:
-                w_val = tbl_ind.attrib.get(qn("w:w"), "")
-                ind_dict = {
-                    "value": int(w_val) if w_val.isdigit() else w_val,
-                    "type": tbl_ind.attrib.get(qn("w:type"), "dxa"),
-                }
-                table_properties["indent"] = ind_dict
+            # --------------------------------
+            # Floating Table Position
+            # --------------------------------
 
-            # Table Layout (w:tblLayout)
-            tbl_layout = tbl_pr.find(qn("w:tblLayout"))
-            if tbl_layout is not None:
-                table_properties["layout"] = tbl_layout.attrib.get(qn("w:type"), "fixed")
+            position_properties = tbl_pr.find(
+                qn("w:tblpPr")
+            )
 
-            # Table Look (w:tblLook)
-            tbl_look = tbl_pr.find(qn("w:tblLook"))
-            if tbl_look is not None:
-                look_dict: dict[str, Any] = {}
-                for k, v in tbl_look.attrib.items():
-                    look_dict[local_name(k)] = v
-                table_properties["look"] = look_dict
+            if position_properties is not None:
+                position_data: dict[str, Any] = {}
 
-            # Table Shading (w:shd)
-            tbl_shd = tbl_pr.find(qn("w:shd"))
-            if tbl_shd is not None:
-                shd_dict: dict[str, Any] = {}
-                for k, v in tbl_shd.attrib.items():
-                    shd_dict[local_name(k)] = v
-                table_properties["shading"] = shd_dict
+                for key, value in (
+                    position_properties.attrib.items()
+                ):
+                    clean_key = local_name(key)
 
-            # Table Borders (w:tblBorders)
-            tbl_borders = tbl_pr.find(qn("w:tblBorders"))
-            if tbl_borders is not None:
-                bdr_dict: dict[str, Any] = {}
-                for side in ("top", "left", "bottom", "right", "insideH", "insideV"):
-                    b_el = tbl_borders.find(qn(f"w:{side}"))
-                    if b_el is not None:
-                        bdr_dict[side] = {local_name(k): v for k, v in b_el.attrib.items()}
-                if bdr_dict:
-                    table_properties["borders"] = bdr_dict
+                    if value.isdigit() or (
+                        value.startswith("-")
+                        and value[1:].isdigit()
+                    ):
+                        value = int(value)
 
-        # Table Grid (w:tblGrid -> grid)
-        grid_cols: list[int | str] = []
-        tbl_grid = element.find(qn("w:tblGrid"))
-        if tbl_grid is not None:
-            for col in tbl_grid.findall(qn("w:gridCol")):
-                w_val = col.attrib.get(qn("w:w"), "")
-                grid_cols.append(int(w_val) if w_val.isdigit() else w_val)
+                    position_data[clean_key] = value
 
-        # Rows (w:tr -> tableRow)
-        rows: list[Any] = []
-        for tr in element.findall(qn("w:tr")):
-            row_properties: dict[str, Any] = {}
-            tr_pr = tr.find(qn("w:trPr"))
-            if tr_pr is not None:
-                if tr_pr.find(qn("w:tblHeader")) is not None:
-                    row_properties["header"] = True
-                if tr_pr.find(qn("w:cantSplit")) is not None:
-                    row_properties["cantSplit"] = True
-                jc = tr_pr.find(qn("w:jc"))
-                if jc is not None:
-                    row_properties["alignment"] = jc.attrib.get(qn("w:val"), "")
-                tbl_spacing = tr_pr.find(qn("w:tblCellSpacing"))
-                if tbl_spacing is not None:
-                    w_val = tbl_spacing.attrib.get(qn("w:w"), "")
-                    sp_dict = {
-                        "value": int(w_val) if w_val.isdigit() else w_val,
-                        "type": tbl_spacing.attrib.get(qn("w:type"), "dxa"),
+                table_properties[
+                    "positionProperties"
+                ] = position_data
+
+            # --------------------------------
+            # Cell Margins
+            # --------------------------------
+
+            table_cell_margins = tbl_pr.find(
+                qn("w:tblCellMar")
+            )
+
+            if table_cell_margins is not None:
+                margins: dict[str, Any] = {}
+
+                for side in (
+                    "top",
+                    "left",
+                    "bottom",
+                    "right",
+                    "start",
+                    "end",
+                ):
+                    side_element = table_cell_margins.find(
+                        qn(f"w:{side}")
+                    )
+
+                    if side_element is None:
+                        continue
+
+                    width_value = side_element.attrib.get(
+                        qn("w:w"),
+                        "0",
+                    )
+
+                    margins[side] = {
+                        "value": (
+                            int(width_value)
+                            if width_value.isdigit()
+                            else width_value
+                        ),
+                        "type": side_element.attrib.get(
+                            qn("w:type"),
+                            "dxa",
+                        ),
                     }
-                    row_properties["cellSpacing"] = sp_dict
-                tr_height = tr_pr.find(qn("w:trHeight"))
-                if tr_height is not None:
-                    h_val = tr_height.attrib.get(qn("w:val"), "")
-                    height_num = int(h_val) if h_val.isdigit() else h_val
-                    h_rule = tr_height.attrib.get(qn("w:hRule"))
-                    row_properties["height"] = height_num
-                    if h_rule:
-                        row_properties["heightRule"] = h_rule
 
-            # Cells (w:tc -> tableCell)
-            cells: list[Any] = []
-            for tc in tr.findall(qn("w:tc")):
-                cell_properties: dict[str, Any] = {}
-                tc_pr = tc.find(qn("w:tcPr"))
-                if tc_pr is not None:
-                    tc_w = tc_pr.find(qn("w:tcW"))
-                    if tc_w is not None:
-                        w_val = tc_w.attrib.get(qn("w:w"), "")
-                        cell_w_dict = {
-                            "value": int(w_val) if w_val.isdigit() else w_val,
-                            "type": tc_w.attrib.get(qn("w:type"), "auto"),
+                if margins:
+                    table_properties[
+                        "cellMargins"
+                    ] = margins
+
+            # --------------------------------
+            # Cell Spacing
+            # --------------------------------
+
+            cell_spacing = tbl_pr.find(
+                qn("w:tblCellSpacing")
+            )
+
+            if cell_spacing is not None:
+                width_value = cell_spacing.attrib.get(
+                    qn("w:w"),
+                    "",
+                )
+
+                spacing_data = {
+                    "value": (
+                        int(width_value)
+                        if width_value.isdigit()
+                        else width_value
+                    ),
+                    "type": cell_spacing.attrib.get(
+                        qn("w:type"),
+                        "dxa",
+                    ),
+                }
+
+                table_properties[
+                    "cellSpacing"
+                ] = spacing_data
+
+            # --------------------------------
+            # Table Indent
+            # --------------------------------
+
+            table_indent = tbl_pr.find(
+                qn("w:tblInd")
+            )
+
+            if table_indent is not None:
+                width_value = table_indent.attrib.get(
+                    qn("w:w"),
+                    "",
+                )
+
+                indent_data = {
+                    "value": (
+                        int(width_value)
+                        if width_value.isdigit()
+                        else width_value
+                    ),
+                    "type": table_indent.attrib.get(
+                        qn("w:type"),
+                        "dxa",
+                    ),
+                }
+
+                table_properties["indent"] = (
+                    indent_data
+                )
+
+            # --------------------------------
+            # Table Layout
+            # --------------------------------
+
+            table_layout = tbl_pr.find(
+                qn("w:tblLayout")
+            )
+
+            if table_layout is not None:
+                table_properties["layout"] = (
+                    table_layout.attrib.get(
+                        qn("w:type"),
+                        "fixed",
+                    )
+                )
+
+            # --------------------------------
+            # Table Look
+            # --------------------------------
+
+            table_look = tbl_pr.find(
+                qn("w:tblLook")
+            )
+
+            if table_look is not None:
+                look_data: dict[str, Any] = {}
+
+                for key, value in (
+                    table_look.attrib.items()
+                ):
+                    look_data[local_name(key)] = value
+
+                table_properties["look"] = look_data
+
+            # --------------------------------
+            # Table Shading
+            # --------------------------------
+
+            table_shading = tbl_pr.find(
+                qn("w:shd")
+            )
+
+            if table_shading is not None:
+                shading_data: dict[str, Any] = {}
+
+                for key, value in (
+                    table_shading.attrib.items()
+                ):
+                    shading_data[local_name(key)] = value
+
+                table_properties["shading"] = (
+                    shading_data
+                )
+
+            # --------------------------------
+            # Table Borders
+            # --------------------------------
+
+            table_borders = tbl_pr.find(
+                qn("w:tblBorders")
+            )
+
+            if table_borders is not None:
+                borders_data: dict[str, Any] = {}
+
+                for side in (
+                    "top",
+                    "left",
+                    "bottom",
+                    "right",
+                    "start",
+                    "end",
+                    "insideH",
+                    "insideV",
+                ):
+                    border_element = table_borders.find(
+                        qn(f"w:{side}")
+                    )
+
+                    if border_element is not None:
+                        borders_data[side] = {
+                            local_name(key): value
+                            for key, value
+                            in border_element.attrib.items()
                         }
-                        cell_properties["width"] = cell_w_dict
 
-                    grid_span = tc_pr.find(qn("w:gridSpan"))
+                if borders_data:
+                    table_properties["borders"] = (
+                        borders_data
+                    )
+
+        # --------------------------------
+        # Table Grid
+        # --------------------------------
+
+        grid_columns: list[int | str] = []
+
+        table_grid = element.find(
+            qn("w:tblGrid")
+        )
+
+        if table_grid is not None:
+            for column in table_grid.findall(
+                qn("w:gridCol")
+            ):
+                width_value = column.attrib.get(
+                    qn("w:w"),
+                    "",
+                )
+
+                grid_columns.append(
+                    int(width_value)
+                    if width_value.isdigit()
+                    else width_value
+                )
+
+        # --------------------------------
+        # Rows
+        # --------------------------------
+
+        rows: list[Any] = []
+
+        for row in element.findall(qn("w:tr")):
+
+            row_properties: dict[str, Any] = {}
+
+            row_properties_element = row.find(
+                qn("w:trPr")
+            )
+
+            if row_properties_element is not None:
+
+                # Header row
+                if row_properties_element.find(
+                    qn("w:tblHeader")
+                ) is not None:
+                    row_properties["header"] = True
+
+                # Prevent row splitting
+                if row_properties_element.find(
+                    qn("w:cantSplit")
+                ) is not None:
+                    row_properties["cantSplit"] = True
+
+                # Row alignment
+                alignment = row_properties_element.find(
+                    qn("w:jc")
+                )
+
+                if alignment is not None:
+                    row_properties["alignment"] = (
+                        alignment.attrib.get(
+                            qn("w:val"),
+                            "",
+                        )
+                    )
+
+                # Row cell spacing
+                row_spacing = row_properties_element.find(
+                    qn("w:tblCellSpacing")
+                )
+
+                if row_spacing is not None:
+                    width_value = row_spacing.attrib.get(
+                        qn("w:w"),
+                        "",
+                    )
+
+                    row_properties["cellSpacing"] = {
+                        "value": (
+                            int(width_value)
+                            if width_value.isdigit()
+                            else width_value
+                        ),
+                        "type": row_spacing.attrib.get(
+                            qn("w:type"),
+                            "dxa",
+                        ),
+                    }
+
+                # Row height
+                row_height = row_properties_element.find(
+                    qn("w:trHeight")
+                )
+
+                if row_height is not None:
+                    height_value = row_height.attrib.get(
+                        qn("w:val"),
+                        "",
+                    )
+
+                    row_properties["height"] = (
+                        int(height_value)
+                        if height_value.isdigit()
+                        else height_value
+                    )
+
+                    height_rule = row_height.attrib.get(
+                        qn("w:hRule")
+                    )
+
+                    if height_rule:
+                        row_properties[
+                            "heightRule"
+                        ] = height_rule
+
+            # --------------------------------
+            # Cells
+            # --------------------------------
+
+            cells: list[Any] = []
+
+            for cell in row.findall(qn("w:tc")):
+
+                cell_properties: dict[str, Any] = {}
+
+                cell_properties_element = cell.find(
+                    qn("w:tcPr")
+                )
+
+                if cell_properties_element is not None:
+
+                    # Cell width
+                    cell_width = cell_properties_element.find(
+                        qn("w:tcW")
+                    )
+
+                    if cell_width is not None:
+                        width_value = cell_width.attrib.get(
+                            qn("w:w"),
+                            "",
+                        )
+
+                        cell_properties["width"] = {
+                            "value": (
+                                int(width_value)
+                                if width_value.isdigit()
+                                else width_value
+                            ),
+                            "type": cell_width.attrib.get(
+                                qn("w:type"),
+                                "auto",
+                            ),
+                        }
+
+                    # Column span
+                    grid_span = cell_properties_element.find(
+                        qn("w:gridSpan")
+                    )
+
                     if grid_span is not None:
-                        span_val = grid_span.attrib.get(qn("w:val"), "1")
-                        span_num = int(span_val) if span_val.isdigit() else span_val
-                        cell_properties["gridSpan"] = span_num
+                        span_value = grid_span.attrib.get(
+                            qn("w:val"),
+                            "1",
+                        )
 
-                    v_merge = tc_pr.find(qn("w:vMerge"))
-                    if v_merge is not None:
-                        merge_val = v_merge.attrib.get(qn("w:val"), "continue")
-                        cell_properties["vMerge"] = merge_val
+                        cell_properties["gridSpan"] = (
+                            int(span_value)
+                            if span_value.isdigit()
+                            else span_value
+                        )
 
-                    v_align = tc_pr.find(qn("w:vAlign"))
-                    if v_align is not None:
-                        cell_properties["vAlign"] = v_align.attrib.get(qn("w:val"), "")
+                    # Vertical merge
+                    vertical_merge = cell_properties_element.find(
+                        qn("w:vMerge")
+                    )
 
-                    hide_mark = tc_pr.find(qn("w:hideMark"))
+                    if vertical_merge is not None:
+                        merge_value = vertical_merge.attrib.get(
+                            qn("w:val"),
+                            "continue",
+                        )
+
+                        cell_properties["vMerge"] = (
+                            merge_value
+                        )
+
+                    # Vertical alignment
+                    vertical_alignment = (
+                        cell_properties_element.find(
+                            qn("w:vAlign")
+                        )
+                    )
+
+                    if vertical_alignment is not None:
+                        cell_properties["vAlign"] = (
+                            vertical_alignment.attrib.get(
+                                qn("w:val"),
+                                "",
+                            )
+                        )
+
+                    # Hide end mark
+                    hide_mark = cell_properties_element.find(
+                        qn("w:hideMark")
+                    )
+
                     if hide_mark is not None:
-                        cell_properties["hideMark"] = True
+                        cell_properties[
+                            "hideMark"
+                        ] = True
 
-                    # Cell Shading (w:shd)
-                    tc_shd = tc_pr.find(qn("w:shd"))
-                    if tc_shd is not None:
-                        c_shd_dict: dict[str, Any] = {}
-                        for k, v in tc_shd.attrib.items():
-                            c_shd_dict[local_name(k)] = v
-                        cell_properties["shading"] = c_shd_dict
+                    # Cell shading
+                    cell_shading = cell_properties_element.find(
+                        qn("w:shd")
+                    )
 
-                    # Cell Borders (w:tcBorders) - only if not simple or has custom borders
-                    tc_borders = tc_pr.find(qn("w:tcBorders"))
-                    if tc_borders is not None:
-                        tc_bdr_dict: dict[str, Any] = {}
-                        for side in ("top", "left", "bottom", "right", "insideH", "insideV"):
-                            b_el = tc_borders.find(qn(f"w:{side}"))
-                            if b_el is not None:
-                                tc_bdr_dict[side] = {local_name(k): v for k, v in b_el.attrib.items()}
-                        if tc_bdr_dict:
-                            cell_properties["borders"] = tc_bdr_dict
+                    if cell_shading is not None:
+                        shading_data: dict[str, Any] = {}
 
-                # Cell content: iterate through direct children in order (paragraphs AND nested tables)
+                        for key, value in (
+                            cell_shading.attrib.items()
+                        ):
+                            shading_data[
+                                local_name(key)
+                            ] = value
+
+                        cell_properties[
+                            "shading"
+                        ] = shading_data
+
+                    # Cell borders
+                    cell_borders = cell_properties_element.find(
+                        qn("w:tcBorders")
+                    )
+
+                    if cell_borders is not None:
+                        borders_data: dict[str, Any] = {}
+
+                        for side in (
+                            "top",
+                            "left",
+                            "bottom",
+                            "right",
+                            "start",
+                            "end",
+                            "insideH",
+                            "insideV",
+                            "tl2br",
+                            "tr2bl",
+                        ):
+                            border_element = cell_borders.find(
+                                qn(f"w:{side}")
+                            )
+
+                            if border_element is not None:
+                                borders_data[side] = {
+                                    local_name(key): value
+                                    for key, value
+                                    in border_element.attrib.items()
+                                }
+
+                        cell_properties[
+                            "borders"
+                        ] = borders_data
+
+                # --------------------------------
+                # Cell Content
+                # --------------------------------
+
                 content: list[dict[str, Any]] = []
-                for child in tc:
+
+                # Preserve direct child order.
+                for child in cell:
+
                     if child.tag == qn("w:p"):
-                        content.append(self.paragraph_handler.to_json(child, simple=simple))
+                        content.append(
+                            self.paragraph_handler.to_json(
+                                child,
+                                simple=simple,
+                            )
+                        )
+
                     elif child.tag == qn("w:tbl"):
-                        content.append(self.to_json(child, simple=simple))
+                        content.append(
+                            self.to_json(
+                                child,
+                                simple=simple,
+                            )
+                        )
+
+                # --------------------------------
+                # Simple Cell Representation
+                # --------------------------------
 
                 if simple:
-                    # In simple mode, simplify cell representation
-                    # Detect a single paragraph: in simple mode paragraphs don't have type field,
-                    # tables have 'rows'. So a single non-table content item is a paragraph.
-                    def _is_simple_para(item):
-                        """Return True if item is a paragraph in simple mode (no 'rows' key)."""
-                        return isinstance(item, dict) and "rows" not in item
 
-                    if len(content) == 1 and _is_simple_para(content[0]):
-                        p0 = content[0]
-                        # Check if p0 has only 'text' or simple styling
-                        p_keys = set(p0.keys())
-                        if not cell_properties and p_keys == {"text"}:
-                            cells.append(p0["text"])
-                        elif not cell_properties and not p_keys:
+                    def is_simple_paragraph(
+                        item: Any,
+                    ) -> bool:
+                        return (
+                            isinstance(item, dict)
+                            and "rows" not in item
+                        )
+
+                    if (
+                        len(content) == 1
+                        and is_simple_paragraph(
+                            content[0]
+                        )
+                    ):
+                        paragraph_data = content[0]
+                        paragraph_keys = set(
+                            paragraph_data.keys()
+                        )
+
+                        if (
+                            not cell_properties
+                            and paragraph_keys == {"text"}
+                        ):
+                            cells.append(
+                                paragraph_data["text"]
+                            )
+
+                        elif (
+                            not cell_properties
+                            and not paragraph_keys
+                        ):
                             cells.append("")
+
                         else:
-                            # Flatten into single cell object
-                            c_obj: dict[str, Any] = {}
+                            cell_data: dict[str, Any] = {}
+
                             if "width" in cell_properties:
-                                c_obj["width"] = cell_properties["width"]
+                                cell_data["width"] = (
+                                    cell_properties["width"]
+                                )
+
                             if "gridSpan" in cell_properties:
-                                c_obj["colSpan"] = cell_properties["gridSpan"]
+                                cell_data["colSpan"] = (
+                                    cell_properties[
+                                        "gridSpan"
+                                    ]
+                                )
+
                             if "vMerge" in cell_properties:
-                                c_obj["rowSpan"] = cell_properties["vMerge"]
+                                cell_data["rowSpan"] = (
+                                    cell_properties[
+                                        "vMerge"
+                                    ]
+                                )
+
                             if "vAlign" in cell_properties:
-                                c_obj["vAlign"] = cell_properties["vAlign"]
-                            if "shading" in cell_properties and "fill" in cell_properties["shading"]:
-                                c_obj["bg"] = cell_properties["shading"]["fill"]
+                                cell_data["vAlign"] = (
+                                    cell_properties[
+                                        "vAlign"
+                                    ]
+                                )
+
+                            if "shading" in cell_properties:
+                                shading = cell_properties[
+                                    "shading"
+                                ]
+
+                                if (
+                                    isinstance(
+                                        shading,
+                                        dict,
+                                    )
+                                    and any(
+                                        key in shading
+                                        for key in (
+                                            "themeFill",
+                                            "themeFillShade",
+                                            "themeFillTint",
+                                        )
+                                    )
+                                    and len(shading) > 1
+                                ):
+                                    cell_data["bg"] = shading
+
+                                elif (
+                                    isinstance(
+                                        shading,
+                                        dict,
+                                    )
+                                    and "fill" in shading
+                                ):
+                                    cell_data["bg"] = (
+                                        shading["fill"]
+                                    )
+
+                                else:
+                                    cell_data["bg"] = shading
+
                             if "borders" in cell_properties:
-                                c_obj["borders"] = cell_properties["borders"]
-                            for pk in p_keys:
-                                c_obj[pk] = p0[pk]
-                            cells.append(c_obj)
-                    elif not content and not cell_properties:
+                                cell_data["borders"] = (
+                                    cell_properties[
+                                        "borders"
+                                    ]
+                                )
+
+                            for key in paragraph_keys:
+                                cell_data[key] = (
+                                    paragraph_data[key]
+                                )
+
+                            cells.append(cell_data)
+
+                    elif (
+                        not content
+                        and not cell_properties
+                    ):
                         cells.append("")
+
                     else:
-                        c_dict: dict[str, Any] = {}
+                        cell_data: dict[str, Any] = {}
+
                         if "width" in cell_properties:
-                            c_dict["width"] = cell_properties["width"]
+                            cell_data["width"] = (
+                                cell_properties[
+                                    "width"
+                                ]
+                            )
+
                         if "gridSpan" in cell_properties:
-                            c_dict["colSpan"] = cell_properties["gridSpan"]
+                            cell_data["colSpan"] = (
+                                cell_properties[
+                                    "gridSpan"
+                                ]
+                            )
+
                         if "vMerge" in cell_properties:
-                            c_dict["rowSpan"] = cell_properties["vMerge"]
+                            cell_data["rowSpan"] = (
+                                cell_properties[
+                                    "vMerge"
+                                ]
+                            )
+
                         if "vAlign" in cell_properties:
-                            c_dict["vAlign"] = cell_properties["vAlign"]
-                        if "shading" in cell_properties and "fill" in cell_properties["shading"]:
-                            c_dict["bg"] = cell_properties["shading"]["fill"]
+                            cell_data["vAlign"] = (
+                                cell_properties[
+                                    "vAlign"
+                                ]
+                            )
+
+                        if "shading" in cell_properties:
+                            shading = cell_properties[
+                                "shading"
+                            ]
+
+                            if (
+                                isinstance(
+                                    shading,
+                                    dict,
+                                )
+                                and any(
+                                    key in shading
+                                    for key in (
+                                        "themeFill",
+                                        "themeFillShade",
+                                        "themeFillTint",
+                                    )
+                                )
+                                and len(shading) > 1
+                            ):
+                                cell_data["bg"] = shading
+
+                            elif (
+                                isinstance(
+                                    shading,
+                                    dict,
+                                )
+                                and "fill" in shading
+                            ):
+                                cell_data["bg"] = (
+                                    shading["fill"]
+                                )
+
+                            else:
+                                cell_data["bg"] = shading
+
                         if "borders" in cell_properties:
-                            c_dict["borders"] = cell_properties["borders"]
-                        c_dict["content"] = content
-                        cells.append(c_dict)
+                            cell_data["borders"] = (
+                                cell_properties[
+                                    "borders"
+                                ]
+                            )
+
+                        cell_data["content"] = content
+                        cells.append(cell_data)
+
+                # --------------------------------
+                # Full Cell Representation
+                # --------------------------------
+
                 else:
-                    cells.append({
-                        "type": self.tag_to_name("w:tc"),
-                        "properties": cell_properties,
-                        "content": content,
-                    })
+                    cells.append(
+                        {
+                            "type": self.tag_to_name(
+                                "w:tc"
+                            ),
+                            "properties": cell_properties,
+                            "content": content,
+                        }
+                    )
+
+            # --------------------------------
+            # Row Representation
+            # --------------------------------
 
             if simple and not row_properties:
-                # Row is directly the list of cells
                 rows.append(cells)
             else:
-                rows.append({
-                    "type": self.tag_to_name("w:tr"),
-                    "properties": row_properties,
-                    "cells": cells,
-                })
+                rows.append(
+                    {
+                        "type": self.tag_to_name(
+                            "w:tr"
+                        ),
+                        "properties": row_properties,
+                        "cells": cells,
+                    }
+                )
+
+        # --------------------------------
+        # Table Result
+        # --------------------------------
 
         if simple:
             result: dict[str, Any] = {
                 "type": "table",
                 "rows": rows,
             }
-            if "style" in table_properties:
-                result["style"] = table_properties["style"]
-            if "alignment" in table_properties:
-                result["align"] = table_properties["alignment"]
-            if "width" in table_properties:
-                result["width"] = table_properties["width"]
-            if "borders" in table_properties:
-                result["borders"] = table_properties["borders"]
-            if "cellMargins" in table_properties:
-                result["cellMargins"] = table_properties["cellMargins"]
-            if "indent" in table_properties:
-                result["indent"] = table_properties["indent"]
-            if "layout" in table_properties:
-                result["layout"] = table_properties["layout"]
-            if "look" in table_properties:
-                result["look"] = table_properties["look"]
-            if "shading" in table_properties:
-                result["shading"] = table_properties["shading"]
-            if grid_cols:
-                result["grid"] = grid_cols
+
+            simple_property_map = {
+                "style": "style",
+                "alignment": "align",
+                "width": "width",
+                "borders": "borders",
+                "cellMargins": "cellMargins",
+                "indent": "indent",
+                "layout": "layout",
+                "look": "look",
+                "shading": "shading",
+            }
+
+            for source_key, target_key in (
+                simple_property_map.items()
+            ):
+                if source_key in table_properties:
+                    result[target_key] = (
+                        table_properties[source_key]
+                    )
+
+            if grid_columns:
+                result["grid"] = grid_columns
+
         else:
-            result: dict[str, Any] = {
-                "type": self.tag_to_name("w:tbl"),
+            result = {
+                "type": self.tag_to_name(
+                    "w:tbl"
+                ),
                 "properties": table_properties,
                 "rows": rows,
             }
-            if grid_cols:
-                result["grid"] = grid_cols
+
+            if grid_columns:
+                result["grid"] = grid_columns
 
         return result
 
-    def to_xml(self, data: dict[str, Any]) -> ET.Element:
-        """Convert JSON table representation to w:tbl XML element."""
-        tbl = ET.Element(qn("w:tbl"))
-        props = dict(data.get("tableProperties") or data.get("properties") or {})
-        for k in (
-            "style", "tableStyle", "alignment", "align", "width", "tableWidth",
-            "borders", "layout", "cellMargins", "tableCellMargins",
-            "indent", "tableIndent", "look", "tableLook",
-            "cellSpacing", "tableCellSpacing", "shading", "positionProperties",
-        ):
-            if k in data and k not in props:
-                props[k] = data[k]
+    # --------------------------------
+    # XML Conversion
+    # --------------------------------
 
-        # w:tblPr
-        tbl_pr = ET.SubElement(tbl, qn("w:tblPr"))
+    def to_xml(
+        self,
+        data: dict[str, Any],
+    ) -> ET.Element:
 
-        # Floating table position (tblpPr)
-        pos_props = props.get("tablePositionProperties") or props.get("positionProperties")
-        if pos_props:
-            tblp_attrs: dict[str, str] = {}
-            for k, v in pos_props.items():
-                tblp_attrs[qn(f"w:{k}")] = str(v)
-            ET.SubElement(tbl_pr, qn("w:tblpPr"), tblp_attrs)
+        table = ET.Element(qn("w:tbl"))
 
-        # Style
-        style_val = props.get("tableStyle") or props.get("style")
-        if style_val:
-            ET.SubElement(tbl_pr, qn("w:tblStyle"), {qn("w:val"): str(style_val)})
+        properties = dict(
+            data.get("tableProperties")
+            or data.get("properties")
+            or {}
+        )
 
-        # Width
-        w_info = props.get("tableWidth") or props.get("width")
-        if w_info is not None:
-            if isinstance(w_info, (int, str)) and str(w_info).isdigit():
-                tbl_w_attrs = {qn("w:w"): str(w_info), qn("w:type"): "dxa"}
-            elif isinstance(w_info, dict):
-                tbl_w_attrs = {
-                    qn("w:w"): str(w_info.get("value", 0)),
-                    qn("w:type"): str(w_info.get("type", "auto")),
+        # --------------------------------
+        # Collect Flat Properties
+        # --------------------------------
+
+        property_aliases = (
+            "style",
+            "tableStyle",
+            "alignment",
+            "align",
+            "width",
+            "tableWidth",
+            "borders",
+            "layout",
+            "cellMargins",
+            "tableCellMargins",
+            "indent",
+            "tableIndent",
+            "look",
+            "tableLook",
+            "cellSpacing",
+            "tableCellSpacing",
+            "shading",
+            "positionProperties",
+        )
+
+        for key in property_aliases:
+            if (
+                key in data
+                and key not in properties
+            ):
+                properties[key] = data[key]
+
+        # --------------------------------
+        # Table Properties
+        # --------------------------------
+
+        table_properties = ET.SubElement(
+            table,
+            qn("w:tblPr"),
+        )
+
+        # --------------------------------
+        # Floating Position
+        # --------------------------------
+
+        position_properties = (
+            properties.get(
+                "tablePositionProperties"
+            )
+            or properties.get(
+                "positionProperties"
+            )
+        )
+
+        if position_properties:
+            position_attributes = {
+                qn(f"w:{key}"): str(value)
+                for key, value
+                in position_properties.items()
+            }
+
+            ET.SubElement(
+                table_properties,
+                qn("w:tblpPr"),
+                position_attributes,
+            )
+
+        # --------------------------------
+        # Table Style
+        # --------------------------------
+
+        style_value = (
+            properties.get("tableStyle")
+            or properties.get("style")
+        )
+
+        if style_value:
+            ET.SubElement(
+                table_properties,
+                qn("w:tblStyle"),
+                {
+                    qn("w:val"): str(style_value),
+                },
+            )
+
+        # --------------------------------
+        # Table Width
+        # --------------------------------
+
+        width_info = (
+            properties.get("tableWidth")
+            or properties.get("width")
+        )
+
+        if width_info is not None:
+
+            if (
+                isinstance(
+                    width_info,
+                    (int, str),
+                )
+                and str(width_info).isdigit()
+            ):
+                width_attributes = {
+                    qn("w:w"): str(width_info),
+                    qn("w:type"): "dxa",
                 }
+
+            elif isinstance(
+                width_info,
+                dict,
+            ):
+                width_attributes = {
+                    qn("w:w"): str(
+                        width_info.get(
+                            "value",
+                            0,
+                        )
+                    ),
+                    qn("w:type"): str(
+                        width_info.get(
+                            "type",
+                            "auto",
+                        )
+                    ),
+                }
+
             else:
-                tbl_w_attrs = {qn("w:w"): "0", qn("w:type"): "auto"}
-            ET.SubElement(tbl_pr, qn("w:tblW"), tbl_w_attrs)
+                width_attributes = {
+                    qn("w:w"): "0",
+                    qn("w:type"): "auto",
+                }
 
-        # Alignment
-        align_val = props.get("alignment") or props.get("align")
-        if align_val:
-            ET.SubElement(tbl_pr, qn("w:jc"), {qn("w:val"): str(align_val)})
+            ET.SubElement(
+                table_properties,
+                qn("w:tblW"),
+                width_attributes,
+            )
 
+        # --------------------------------
+        # Table Alignment
+        # --------------------------------
+
+        alignment_value = (
+            properties.get("alignment")
+            or properties.get("align")
+            or properties.get("jc")
+        )
+
+        if alignment_value:
+            alignment_string = str(
+                alignment_value
+            ).lower()
+
+            alignment_map = {
+                "center": "center",
+                "left": "left",
+                "right": "right",
+                "start": "left",
+                "end": "right",
+            }
+
+            ET.SubElement(
+                table_properties,
+                qn("w:jc"),
+                {
+                    qn("w:val"): alignment_map.get(
+                        alignment_string,
+                        str(alignment_value),
+                    )
+                },
+            )
+
+        # --------------------------------
         # Cell Spacing
-        sp_info = props.get("tableCellSpacing") or props.get("cellSpacing")
-        if sp_info:
-            sp_attrs = {
-                qn("w:w"): str(sp_info.get("value", 0)),
-                qn("w:type"): str(sp_info.get("type", "dxa")),
+        # --------------------------------
+
+        spacing_info = (
+            properties.get(
+                "tableCellSpacing"
+            )
+            or properties.get(
+                "cellSpacing"
+            )
+        )
+
+        if spacing_info:
+            spacing_attributes = {
+                qn("w:w"): str(
+                    spacing_info.get(
+                        "value",
+                        0,
+                    )
+                ),
+                qn("w:type"): str(
+                    spacing_info.get(
+                        "type",
+                        "dxa",
+                    )
+                ),
             }
-            ET.SubElement(tbl_pr, qn("w:tblCellSpacing"), sp_attrs)
 
-        # Indent
-        ind_info = props.get("tableIndent") or props.get("indent")
-        if ind_info:
-            ind_attrs = {
-                qn("w:w"): str(ind_info.get("value", 0)),
-                qn("w:type"): str(ind_info.get("type", "dxa")),
+            ET.SubElement(
+                table_properties,
+                qn("w:tblCellSpacing"),
+                spacing_attributes,
+            )
+
+        # --------------------------------
+        # Table Indent
+        # --------------------------------
+
+        indent_info = (
+            properties.get("tableIndent")
+            or properties.get("indent")
+        )
+
+        if indent_info:
+            indent_attributes = {
+                qn("w:w"): str(
+                    indent_info.get(
+                        "value",
+                        0,
+                    )
+                ),
+                qn("w:type"): str(
+                    indent_info.get(
+                        "type",
+                        "dxa",
+                    )
+                ),
             }
-            ET.SubElement(tbl_pr, qn("w:tblInd"), ind_attrs)
 
-        # Borders
-        borders_info = props.get("tableBorders") or props.get("borders")
-        if borders_info:
-            if isinstance(borders_info, dict):
-                bdr_el = ET.SubElement(tbl_pr, qn("w:tblBorders"))
-                for side, side_attrs in borders_info.items():
-                    if isinstance(side_attrs, dict):
-                        q_attrs = {qn(f"w:{k}"): str(v) for k, v in side_attrs.items()}
-                        ET.SubElement(bdr_el, qn(f"w:{side}"), q_attrs)
+            ET.SubElement(
+                table_properties,
+                qn("w:tblInd"),
+                indent_attributes,
+            )
 
-        # Shading
-        shd_info = props.get("shading")
-        if shd_info:
-            shd_attrs = {qn(f"w:{k}"): str(v) for k, v in shd_info.items()}
-            ET.SubElement(tbl_pr, qn("w:shd"), shd_attrs)
+        # --------------------------------
+        # Table Borders
+        # --------------------------------
 
-        # Layout
-        layout_val = props.get("tableLayout") or props.get("layout")
-        if layout_val:
-            ET.SubElement(tbl_pr, qn("w:tblLayout"), {qn("w:type"): str(layout_val)})
+        borders_info = (
+            properties.get("tableBorders")
+            or properties.get("borders")
+        )
 
+        if isinstance(
+            borders_info,
+            dict,
+        ):
+            borders_element = ET.SubElement(
+                table_properties,
+                qn("w:tblBorders"),
+            )
+
+            for side, side_attributes in (
+                borders_info.items()
+            ):
+                if not isinstance(
+                    side_attributes,
+                    dict,
+                ):
+                    continue
+
+                attributes = {
+                    qn(f"w:{key}"): str(value)
+                    for key, value
+                    in side_attributes.items()
+                }
+
+                ET.SubElement(
+                    borders_element,
+                    qn(f"w:{side}"),
+                    attributes,
+                )
+
+        # --------------------------------
+        # Table Shading
+        # --------------------------------
+
+        shading_info = properties.get(
+            "shading"
+        )
+
+        if shading_info:
+            shading_attributes = {
+                qn(f"w:{key}"): str(value)
+                for key, value
+                in shading_info.items()
+            }
+
+            ET.SubElement(
+                table_properties,
+                qn("w:shd"),
+                shading_attributes,
+            )
+
+        # --------------------------------
+        # Table Layout
+        # --------------------------------
+
+        layout_value = (
+            properties.get("tableLayout")
+            or properties.get("layout")
+        )
+
+        if layout_value:
+            ET.SubElement(
+                table_properties,
+                qn("w:tblLayout"),
+                {
+                    qn("w:type"): str(
+                        layout_value
+                    ),
+                },
+            )
+
+        # --------------------------------
         # Cell Margins
-        mar_info = props.get("tableCellMargins") or props.get("cellMargins")
-        if mar_info:
-            mar_el = ET.SubElement(tbl_pr, qn("w:tblCellMar"))
-            for side, side_data in mar_info.items():
-                if isinstance(side_data, dict):
-                    side_attrs = {
-                        qn("w:w"): str(side_data.get("value", 0)),
-                        qn("w:type"): str(side_data.get("type", "dxa")),
-                    }
-                    ET.SubElement(mar_el, qn(f"w:{side}"), side_attrs)
+        # --------------------------------
 
-        # Look
-        look_info = props.get("tableLook") or props.get("look")
+        margins_info = (
+            properties.get(
+                "tableCellMargins"
+            )
+            or properties.get(
+                "cellMargins"
+            )
+        )
+
+        if margins_info:
+            margins_element = ET.SubElement(
+                table_properties,
+                qn("w:tblCellMar"),
+            )
+
+            for side, side_data in (
+                margins_info.items()
+            ):
+                if not isinstance(
+                    side_data,
+                    dict,
+                ):
+                    continue
+
+                side_attributes = {
+                    qn("w:w"): str(
+                        side_data.get(
+                            "value",
+                            0,
+                        )
+                    ),
+                    qn("w:type"): str(
+                        side_data.get(
+                            "type",
+                            "dxa",
+                        )
+                    ),
+                }
+
+                ET.SubElement(
+                    margins_element,
+                    qn(f"w:{side}"),
+                    side_attributes,
+                )
+
+            from handlers.base import (
+                TBLCELLMAR_ORDER,
+                sort_children_by_schema,
+            )
+
+            sort_children_by_schema(
+                margins_element,
+                TBLCELLMAR_ORDER,
+            )
+
+        # --------------------------------
+        # Table Look
+        # --------------------------------
+
+        look_info = (
+            properties.get("tableLook")
+            or properties.get("look")
+        )
+
         if look_info:
-            look_attrs = {qn(f"w:{k}"): str(v) for k, v in look_info.items()}
-            ET.SubElement(tbl_pr, qn("w:tblLook"), look_attrs)
+            look_attributes = {
+                qn(f"w:{key}"): str(value)
+                for key, value
+                in look_info.items()
+            }
 
-        # w:tblGrid
-        grid_data = data.get("tableGrid") or data.get("grid")
+            ET.SubElement(
+                table_properties,
+                qn("w:tblLook"),
+                look_attributes,
+            )
+
+        # --------------------------------
+        # Table Property Ordering
+        # --------------------------------
+
+        from handlers.base import (
+            TBLPR_ORDER,
+            sort_children_by_schema,
+        )
+
+        sort_children_by_schema(
+            table_properties,
+            TBLPR_ORDER,
+        )
+
+        # --------------------------------
+        # Table Grid
+        # --------------------------------
+
+        grid_data = (
+            data.get("tableGrid")
+            or data.get("grid")
+        )
+
         if grid_data:
-            tbl_grid = ET.SubElement(tbl, qn("w:tblGrid"))
-            for col_w in grid_data:
-                ET.SubElement(tbl_grid, qn("w:gridCol"), {qn("w:w"): str(col_w)})
+            table_grid = ET.SubElement(
+                table,
+                qn("w:tblGrid"),
+            )
 
+            for column_width in grid_data:
+                ET.SubElement(
+                    table_grid,
+                    qn("w:gridCol"),
+                    {
+                        qn("w:w"): str(
+                            column_width
+                        )
+                    },
+                )
+
+        # --------------------------------
         # Rows
-        for row_data in data.get("rows", []):
-            tr = ET.SubElement(tbl, qn("w:tr"))
-            if isinstance(row_data, list):
+        # --------------------------------
+
+        for row_data in data.get(
+            "rows",
+            [],
+        ):
+            row = ET.SubElement(
+                table,
+                qn("w:tr"),
+            )
+
+            if isinstance(
+                row_data,
+                list,
+            ):
                 cells_list = row_data
-                r_props = {}
-            elif isinstance(row_data, dict):
-                cells_list = row_data.get("cells", [])
-                r_props = row_data.get("tableRowProperties") or row_data.get("properties", {})
+                row_properties = {}
+
+            elif isinstance(
+                row_data,
+                dict,
+            ):
+                cells_list = row_data.get(
+                    "cells",
+                    [],
+                )
+
+                row_properties = (
+                    row_data.get(
+                        "tableRowProperties"
+                    )
+                    or row_data.get(
+                        "properties",
+                        {},
+                    )
+                )
+
             else:
                 cells_list = []
-                r_props = {}
+                row_properties = {}
 
-            if r_props:
-                tr_pr = ET.SubElement(tr, qn("w:trPr"))
-                if r_props.get("tableHeader") or r_props.get("header"):
-                    ET.SubElement(tr_pr, qn("w:tblHeader"))
-                if r_props.get("cantSplitRow") or r_props.get("cantSplit"):
-                    ET.SubElement(tr_pr, qn("w:cantSplit"))
-                if r_props.get("alignment"):
-                    ET.SubElement(tr_pr, qn("w:jc"), {qn("w:val"): str(r_props["alignment"])})
-                sp_info = r_props.get("tableCellSpacing") or r_props.get("cellSpacing")
-                if sp_info:
-                    sp_attrs = {
-                        qn("w:w"): str(sp_info.get("value", 0)),
-                        qn("w:type"): str(sp_info.get("type", "dxa")),
+            # --------------------------------
+            # Row Properties
+            # --------------------------------
+
+            if row_properties:
+                row_properties_element = ET.SubElement(
+                    row,
+                    qn("w:trPr"),
+                )
+
+                if (
+                    row_properties.get(
+                        "tableHeader"
+                    )
+                    or row_properties.get(
+                        "header"
+                    )
+                ):
+                    ET.SubElement(
+                        row_properties_element,
+                        qn("w:tblHeader"),
+                    )
+
+                if (
+                    row_properties.get(
+                        "cantSplitRow"
+                    )
+                    or row_properties.get(
+                        "cantSplit"
+                    )
+                ):
+                    ET.SubElement(
+                        row_properties_element,
+                        qn("w:cantSplit"),
+                    )
+
+                if row_properties.get(
+                    "alignment"
+                ):
+                    ET.SubElement(
+                        row_properties_element,
+                        qn("w:jc"),
+                        {
+                            qn("w:val"): str(
+                                row_properties[
+                                    "alignment"
+                                ]
+                            )
+                        },
+                    )
+
+                row_spacing = (
+                    row_properties.get(
+                        "tableCellSpacing"
+                    )
+                    or row_properties.get(
+                        "cellSpacing"
+                    )
+                )
+
+                if row_spacing:
+                    spacing_attributes = {
+                        qn("w:w"): str(
+                            row_spacing.get(
+                                "value",
+                                0,
+                            )
+                        ),
+                        qn("w:type"): str(
+                            row_spacing.get(
+                                "type",
+                                "dxa",
+                            )
+                        ),
                     }
-                    ET.SubElement(tr_pr, qn("w:tblCellSpacing"), sp_attrs)
-                height_val = r_props.get("tableRowHeight") or r_props.get("height")
-                if height_val is not None:
-                    h_attrs = {qn("w:val"): str(height_val)}
-                    if r_props.get("heightRule"):
-                        h_attrs[qn("w:hRule")] = str(r_props["heightRule"])
-                    ET.SubElement(tr_pr, qn("w:trHeight"), h_attrs)
+
+                    ET.SubElement(
+                        row_properties_element,
+                        qn("w:tblCellSpacing"),
+                        spacing_attributes,
+                    )
+
+                row_height = (
+                    row_properties.get(
+                        "tableRowHeight"
+                    )
+                    or row_properties.get(
+                        "height"
+                    )
+                )
+
+                if row_height is not None:
+                    height_attributes = {
+                        qn("w:val"): str(
+                            row_height
+                        )
+                    }
+
+                    if row_properties.get(
+                        "heightRule"
+                    ):
+                        height_attributes[
+                            qn("w:hRule")
+                        ] = str(
+                            row_properties[
+                                "heightRule"
+                            ]
+                        )
+
+                    ET.SubElement(
+                        row_properties_element,
+                        qn("w:trHeight"),
+                        height_attributes,
+                    )
+
+                from handlers.base import (
+                    TRPR_ORDER,
+                    sort_children_by_schema,
+                )
+
+                sort_children_by_schema(
+                    row_properties_element,
+                    TRPR_ORDER,
+                )
+
+            # --------------------------------
+            # Cells
+            # --------------------------------
 
             for cell_data in cells_list:
-                tc = ET.SubElement(tr, qn("w:tc"))
-                if isinstance(cell_data, str):
-                    # Plain string cell
-                    tc_p = ET.SubElement(tc, qn("w:p"))
+
+                cell = ET.SubElement(
+                    row,
+                    qn("w:tc"),
+                )
+
+                # --------------------------------
+                # Plain String Cell
+                # --------------------------------
+
+                if isinstance(
+                    cell_data,
+                    str,
+                ):
+                    paragraph = ET.SubElement(
+                        cell,
+                        qn("w:p"),
+                    )
+
                     if cell_data:
-                        tc_r = ET.SubElement(tc_p, qn("w:r"))
-                        tc_t = ET.SubElement(tc_r, qn("w:t"))
-                        tc_t.text = cell_data
-                        if cell_data.startswith(" ") or cell_data.endswith(" "):
-                            tc_t.set(qn("xml:space"), "preserve")
+                        run = ET.SubElement(
+                            paragraph,
+                            qn("w:r"),
+                        )
+
+                        text = ET.SubElement(
+                            run,
+                            qn("w:t"),
+                        )
+
+                        text.text = cell_data
+
+                        if (
+                            cell_data.startswith(" ")
+                            or cell_data.endswith(" ")
+                        ):
+                            text.set(
+                                qn("xml:space"),
+                                "preserve",
+                            )
+
                     continue
-                elif isinstance(cell_data, dict):
-                    c_props = dict(cell_data.get("tableCellProperties") or cell_data.get("properties") or {})
-                    # Collect flat properties directly on cell_data
-                    for k in ("colSpan", "gridSpan", "columnSpan", "rowSpan", "vMerge", "verticalMerge",
-                              "vAlign", "verticalAlignment", "width", "cellWidth", "bg", "background",
-                              "shading", "borders", "tableCellBorders", "hideMark", "hideEndMark"):
-                        if k in cell_data and k not in c_props:
-                            c_props[k] = cell_data[k]
 
-                    if c_props:
-                        tc_pr = ET.SubElement(tc, qn("w:tcPr"))
-                        cell_w_info = c_props.get("cellWidth") or c_props.get("width")
-                        if cell_w_info is not None:
-                            if isinstance(cell_w_info, (int, str)) and str(cell_w_info).isdigit():
-                                tc_w_attrs = {qn("w:w"): str(cell_w_info), qn("w:type"): "dxa"}
-                            elif isinstance(cell_w_info, dict):
-                                tc_w_attrs = {
-                                    qn("w:w"): str(cell_w_info.get("value", 0)),
-                                    qn("w:type"): str(cell_w_info.get("type", "auto")),
+                # --------------------------------
+                # Object Cell
+                # --------------------------------
+
+                if isinstance(
+                    cell_data,
+                    dict,
+                ):
+                    cell_properties = dict(
+                        cell_data.get(
+                            "tableCellProperties"
+                        )
+                        or cell_data.get(
+                            "properties",
+                            {},
+                        )
+                    )
+
+                    # Collect flat cell properties.
+                    cell_property_keys = (
+                        "colSpan",
+                        "gridSpan",
+                        "columnSpan",
+                        "rowSpan",
+                        "vMerge",
+                        "verticalMerge",
+                        "vAlign",
+                        "verticalAlignment",
+                        "width",
+                        "cellWidth",
+                        "bg",
+                        "background",
+                        "shading",
+                        "borders",
+                        "tableCellBorders",
+                        "hideMark",
+                        "hideEndMark",
+                    )
+
+                    for key in cell_property_keys:
+                        if (
+                            key in cell_data
+                            and key not in cell_properties
+                        ):
+                            cell_properties[key] = (
+                                cell_data[key]
+                            )
+
+                    # --------------------------------
+                    # Cell Properties XML
+                    # --------------------------------
+
+                    if cell_properties:
+                        cell_properties_element = ET.SubElement(
+                            cell,
+                            qn("w:tcPr"),
+                        )
+
+                        # Cell width
+                        cell_width = (
+                            cell_properties.get(
+                                "cellWidth"
+                            )
+                            or cell_properties.get(
+                                "width"
+                            )
+                        )
+
+                        if cell_width is not None:
+
+                            if (
+                                isinstance(
+                                    cell_width,
+                                    (int, str),
+                                )
+                                and str(
+                                    cell_width
+                                ).isdigit()
+                            ):
+                                width_attributes = {
+                                    qn("w:w"): str(
+                                        cell_width
+                                    ),
+                                    qn("w:type"): "dxa",
                                 }
+
+                            elif isinstance(
+                                cell_width,
+                                dict,
+                            ):
+                                width_attributes = {
+                                    qn("w:w"): str(
+                                        cell_width.get(
+                                            "value",
+                                            0,
+                                        )
+                                    ),
+                                    qn("w:type"): str(
+                                        cell_width.get(
+                                            "type",
+                                            "auto",
+                                        )
+                                    ),
+                                }
+
                             else:
-                                tc_w_attrs = {qn("w:w"): "0", qn("w:type"): "auto"}
-                            ET.SubElement(tc_pr, qn("w:tcW"), tc_w_attrs)
+                                width_attributes = {
+                                    qn("w:w"): "0",
+                                    qn("w:type"): "auto",
+                                }
 
-                        span_val = c_props.get("colSpan") or c_props.get("columnSpan") or c_props.get("gridSpan")
-                        if span_val:
-                            ET.SubElement(tc_pr, qn("w:gridSpan"), {qn("w:val"): str(span_val)})
+                            ET.SubElement(
+                                cell_properties_element,
+                                qn("w:tcW"),
+                                width_attributes,
+                            )
 
-                        v_merge_val = c_props.get("rowSpan") or c_props.get("verticalMerge") or c_props.get("vMerge")
-                        if v_merge_val:
-                            v_attrs = {} if str(v_merge_val) in ("continue", "true", "1") else {qn("w:val"): str(v_merge_val)}
-                            ET.SubElement(tc_pr, qn("w:vMerge"), v_attrs)
+                        # Column span
+                        span_value = (
+                            cell_properties.get(
+                                "colSpan"
+                            )
+                            or cell_properties.get(
+                                "columnSpan"
+                            )
+                            or cell_properties.get(
+                                "gridSpan"
+                            )
+                        )
 
-                        v_align_val = c_props.get("verticalAlignment") or c_props.get("vAlign")
-                        if v_align_val:
-                            ET.SubElement(tc_pr, qn("w:vAlign"), {qn("w:val"): str(v_align_val)})
+                        if span_value:
+                            ET.SubElement(
+                                cell_properties_element,
+                                qn("w:gridSpan"),
+                                {
+                                    qn("w:val"): str(
+                                        span_value
+                                    )
+                                },
+                            )
 
-                        if c_props.get("hideEndMark") or c_props.get("hideMark"):
-                            ET.SubElement(tc_pr, qn("w:hideMark"))
+                        # Vertical merge
+                        vertical_merge = (
+                            cell_properties.get(
+                                "rowSpan"
+                            )
+                            or cell_properties.get(
+                                "verticalMerge"
+                            )
+                            or cell_properties.get(
+                                "vMerge"
+                            )
+                        )
 
-                        # Shading / Background
-                        bg_val = c_props.get("bg") or c_props.get("background") or c_props.get("shading")
-                        if bg_val:
-                            if isinstance(bg_val, str):
-                                ET.SubElement(tc_pr, qn("w:shd"), {
-                                    qn("w:val"): "clear",
-                                    qn("w:color"): "auto",
-                                    qn("w:fill"): bg_val.lstrip("#")
-                                })
-                            elif isinstance(bg_val, dict):
-                                c_shd_attrs = {qn(f"w:{k}"): str(v) for k, v in bg_val.items()}
-                                ET.SubElement(tc_pr, qn("w:shd"), c_shd_attrs)
+                        if vertical_merge:
+                            merge_attributes = {}
 
-                        # Cell borders
-                        c_bdr_info = c_props.get("tableCellBorders") or c_props.get("borders")
-                        if c_bdr_info and isinstance(c_bdr_info, dict):
-                            c_bdr_el = ET.SubElement(tc_pr, qn("w:tcBorders"))
-                            for side, side_attrs in c_bdr_info.items():
-                                if isinstance(side_attrs, dict):
-                                    q_attrs = {qn(f"w:{k}"): str(v) for k, v in side_attrs.items()}
-                                    ET.SubElement(c_bdr_el, qn(f"w:{side}"), q_attrs)
+                            if str(
+                                vertical_merge
+                            ) not in (
+                                "continue",
+                                "true",
+                                "1",
+                            ):
+                                merge_attributes[
+                                    qn("w:val")
+                                ] = str(
+                                    vertical_merge
+                                )
 
-                    # Cell content
-                    cell_content = cell_data.get("content")
+                            ET.SubElement(
+                                cell_properties_element,
+                                qn("w:vMerge"),
+                                merge_attributes,
+                            )
+
+                        # Vertical alignment
+                        vertical_alignment = (
+                            cell_properties.get(
+                                "verticalAlignment"
+                            )
+                            or cell_properties.get(
+                                "vAlign"
+                            )
+                        )
+
+                        if vertical_alignment:
+                            ET.SubElement(
+                                cell_properties_element,
+                                qn("w:vAlign"),
+                                {
+                                    qn("w:val"): str(
+                                        vertical_alignment
+                                    )
+                                },
+                            )
+
+                        # Hide mark
+                        if (
+                            cell_properties.get(
+                                "hideEndMark"
+                            )
+                            or cell_properties.get(
+                                "hideMark"
+                            )
+                        ):
+                            ET.SubElement(
+                                cell_properties_element,
+                                qn("w:hideMark"),
+                            )
+
+                        # --------------------------------
+                        # Cell Shading
+                        # --------------------------------
+
+                        background = (
+                            cell_properties.get("bg")
+                            or cell_properties.get(
+                                "background"
+                            )
+                            or cell_properties.get(
+                                "shading"
+                            )
+                        )
+
+                        if background:
+
+                            if isinstance(
+                                background,
+                                str,
+                            ):
+                                ET.SubElement(
+                                    cell_properties_element,
+                                    qn("w:shd"),
+                                    {
+                                        qn("w:val"): "clear",
+                                        qn("w:color"): "auto",
+                                        qn("w:fill"): (
+                                            background
+                                            .lstrip("#")
+                                        ),
+                                    },
+                                )
+
+                            elif isinstance(
+                                background,
+                                dict,
+                            ):
+                                shading_attributes = {
+                                    qn(f"w:{key}"): str(
+                                        value
+                                    )
+                                    for key, value
+                                    in background.items()
+                                }
+
+                                ET.SubElement(
+                                    cell_properties_element,
+                                    qn("w:shd"),
+                                    shading_attributes,
+                                )
+
+                        # --------------------------------
+                        # Cell Borders
+                        # --------------------------------
+
+                        cell_borders = (
+                            cell_properties.get(
+                                "tableCellBorders"
+                            )
+                            if cell_properties.get(
+                                "tableCellBorders"
+                            ) is not None
+                            else cell_properties.get(
+                                "borders"
+                            )
+                        )
+
+                        if isinstance(
+                            cell_borders,
+                            dict,
+                        ):
+                            borders_element = ET.SubElement(
+                                cell_properties_element,
+                                qn("w:tcBorders"),
+                            )
+
+                            for side, side_attributes in (
+                                cell_borders.items()
+                            ):
+                                if not isinstance(
+                                    side_attributes,
+                                    dict,
+                                ):
+                                    continue
+
+                                attributes = {
+                                    qn(f"w:{key}"): str(
+                                        value
+                                    )
+                                    for key, value
+                                    in side_attributes.items()
+                                }
+
+                                ET.SubElement(
+                                    borders_element,
+                                    qn(f"w:{side}"),
+                                    attributes,
+                                )
+
+                        # --------------------------------
+                        # Cell Property Ordering
+                        # --------------------------------
+
+                        from handlers.base import (
+                            TCPR_ORDER,
+                            sort_children_by_schema,
+                        )
+
+                        sort_children_by_schema(
+                            cell_properties_element,
+                            TCPR_ORDER,
+                        )
+
+                    # --------------------------------
+                    # Cell Content
+                    # --------------------------------
+
+                    cell_content = cell_data.get(
+                        "content"
+                    )
+
                     if cell_content is not None:
+
                         if not cell_content:
-                            tc.append(ET.Element(qn("w:p")))
+                            cell.append(
+                                ET.Element(
+                                    qn("w:p")
+                                )
+                            )
+
                         else:
                             for item in cell_content:
-                                if isinstance(item, str):
-                                    tc.append(self.paragraph_handler.to_xml({"text": item}))
-                                elif isinstance(item, dict):
-                                    item_type = item.get("type", "paragraph")
-                                    if item_type in ("paragraph", "w:p", self.tag_to_name("w:p"), "p"):
-                                        tc.append(self.paragraph_handler.to_xml(item))
-                                    elif item_type in ("table", "w:tbl", self.tag_to_name("w:tbl"), "tbl"):
-                                        tc.append(self.to_xml(item))
-                    elif "text" in cell_data or "runs" in cell_data or any(
-                        k in cell_data for k in (
-                            "spacing", "indent", "indentation", "alignment", "align",
-                            "style", "markProperties", "numbering", "tabs", "breaks"
+
+                                # Plain text
+                                if isinstance(
+                                    item,
+                                    str,
+                                ):
+                                    cell.append(
+                                        self.paragraph_handler.to_xml(
+                                            {
+                                                "text": item
+                                            }
+                                        )
+                                    )
+                                    continue
+
+                                if not isinstance(
+                                    item,
+                                    dict,
+                                ):
+                                    continue
+
+                                item_type = item.get(
+                                    "type",
+                                    "",
+                                )
+
+                                # Nested table
+                                if (
+                                    item_type
+                                    in (
+                                        "table",
+                                        "w:tbl",
+                                        self.tag_to_name(
+                                            "w:tbl"
+                                        ),
+                                        "tbl",
+                                    )
+                                    or "rows" in item
+                                ):
+                                    cell.append(
+                                        self.to_xml(item)
+                                    )
+
+                                # Media
+                                elif item_type in (
+                                    "image",
+                                    "drawing",
+                                    "shape",
+                                    "shapeGroup",
+                                ):
+                                    paragraph = ET.Element(
+                                        qn("w:p")
+                                    )
+
+                                    run = ET.SubElement(
+                                        paragraph,
+                                        qn("w:r"),
+                                    )
+
+                                    from handlers.media import (
+                                        MediaHandler,
+                                    )
+
+                                    run.append(
+                                        MediaHandler().to_xml(
+                                            item
+                                        )
+                                    )
+
+                                    cell.append(
+                                        paragraph
+                                    )
+
+                                # List
+                                elif (
+                                    item_type == "list"
+                                    and "items" in item
+                                    and isinstance(
+                                        item["items"],
+                                        list,
+                                    )
+                                ):
+                                    ordered = item.get(
+                                        "ordered",
+                                        False,
+                                    )
+
+                                    base_level = item.get(
+                                        "level",
+                                        0,
+                                    )
+
+                                    for list_item in item[
+                                        "items"
+                                    ]:
+
+                                        if isinstance(
+                                            list_item,
+                                            str,
+                                        ):
+                                            list_item_data = {
+                                                "text": list_item,
+                                                "level": base_level,
+                                                (
+                                                    "numbered"
+                                                    if ordered
+                                                    else "bullet"
+                                                ): True,
+                                            }
+
+                                        elif isinstance(
+                                            list_item,
+                                            dict,
+                                        ):
+                                            list_item_data = dict(
+                                                list_item
+                                            )
+
+                                            if "level" not in (
+                                                list_item_data
+                                            ):
+                                                list_item_data[
+                                                    "level"
+                                                ] = base_level
+
+                                            if not any(
+                                                key in list_item_data
+                                                for key in (
+                                                    "bullet",
+                                                    "numbered",
+                                                    "list",
+                                                    "numbering",
+                                                )
+                                            ):
+                                                list_item_data[
+                                                    (
+                                                        "numbered"
+                                                        if ordered
+                                                        else "bullet"
+                                                    )
+                                                ] = True
+
+                                        else:
+                                            continue
+
+                                        cell.append(
+                                            self.paragraph_handler.to_xml(
+                                                list_item_data
+                                            )
+                                        )
+
+                                # Normal paragraph
+                                else:
+                                    cell.append(
+                                        self.paragraph_handler.to_xml(
+                                            item
+                                        )
+                                    )
+
+                    # --------------------------------
+                    # Flattened Simple Cell
+                    # --------------------------------
+
+                    elif (
+                        "text" in cell_data
+                        or "runs" in cell_data
+                        or any(
+                            key in cell_data
+                            for key in (
+                                "spacing",
+                                "indent",
+                                "indentation",
+                                "alignment",
+                                "align",
+                                "style",
+                                "pStyle",
+                                "characterStyle",
+                                "rStyle",
+                                "markProperties",
+                                "numbering",
+                                "tabs",
+                                "breaks",
+                                "bullet",
+                                "heading",
+                            )
                         )
                     ):
-                        # Direct styled paragraph from flattened cell_data (simple mode)
-                        p_dict = dict(cell_data)
-                        p_dict.pop("type", None)  # remove type:table if present
-                        # Filter out cell-level properties so they don't corrupt paragraph
-                        for cp_key in ("colSpan", "gridSpan", "columnSpan", "rowSpan",
-                                       "vMerge", "verticalMerge", "vAlign", "verticalAlignment",
-                                       "width", "cellWidth", "bg", "background",
-                                       "borders", "tableCellBorders", "hideMark"):
-                            p_dict.pop(cp_key, None)
-                        tc.append(self.paragraph_handler.to_xml(p_dict))
-                    else:
-                        tc.append(ET.Element(qn("w:p")))
-                else:
-                    tc.append(ET.Element(qn("w:p")))
+                        paragraph_data = dict(
+                            cell_data
+                        )
 
-        return tbl
+                        paragraph_data.pop(
+                            "type",
+                            None,
+                        )
+
+                        # Remove cell-only properties.
+                        cell_only_keys = (
+                            "colSpan",
+                            "gridSpan",
+                            "columnSpan",
+                            "rowSpan",
+                            "vMerge",
+                            "verticalMerge",
+                            "vAlign",
+                            "verticalAlignment",
+                            "width",
+                            "cellWidth",
+                            "bg",
+                            "background",
+                            "borders",
+                            "tableCellBorders",
+                            "hideMark",
+                        )
+
+                        for key in cell_only_keys:
+                            paragraph_data.pop(
+                                key,
+                                None,
+                            )
+
+                        cell.append(
+                            self.paragraph_handler.to_xml(
+                                paragraph_data
+                            )
+                        )
+
+                    else:
+                        cell.append(
+                            ET.Element(
+                                qn("w:p")
+                            )
+                        )
+
+                # --------------------------------
+                # Invalid Cell Fallback
+                # --------------------------------
+
+                else:
+                    cell.append(
+                        ET.Element(
+                            qn("w:p")
+                        )
+                    )
+
+        return table

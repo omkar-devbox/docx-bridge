@@ -1,29 +1,57 @@
-"""DOCX package writer bundling XML parts, media, and relationships into a valid .docx file."""
+# --------------------------------
+# Imports
+# --------------------------------
 
 import zipfile
 from pathlib import Path
 from typing import BinaryIO
 
 
+# --------------------------------
+# DOCX Writer
+# --------------------------------
+
 class DocxWriter:
-    """Builds a valid .docx OpenXML zip archive from parts."""
 
     def __init__(self, target: str | Path | BinaryIO):
         self.target = target
-        self.archive = zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED)
+        self.archive = zipfile.ZipFile(
+            target,
+            "w",
+            compression=zipfile.ZIP_DEFLATED,
+        )
 
-    def write_part(self, part_name: str, content: bytes | str) -> None:
-        """Write raw bytes or string content to a path in the docx package."""
+    # --------------------------------
+    # Write Parts
+    # --------------------------------
+
+    def write_part(
+        self,
+        part_name: str,
+        content: bytes | str,
+    ) -> None:
         if isinstance(content, str):
             content = content.encode("utf-8")
-        self.archive.writestr(part_name, content)
+
+        self.archive.writestr(
+            part_name,
+            content,
+        )
+
+    # --------------------------------
+    # Archive Lifecycle
+    # --------------------------------
 
     def close(self) -> None:
-        """Close the zip archive."""
         self.archive.close()
 
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type,
+        exc_val,
+        exc_tb,
+    ):
         self.close()

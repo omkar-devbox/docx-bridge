@@ -1,0 +1,38 @@
+{
+  "namespace": "http://schemas.openxmlformats.org/package/2006/content-types",
+  "defaults": {
+    "rels": "application/vnd.openxmlformats-package.relationships+xml",
+    "xml": "application/xml",
+    "png": "image/png",
+    "jpeg": "image/jpeg",
+    "jpg": "image/jpeg",
+    "gif": "image/gif",
+    "emf": "image/x-emf",
+    "wmf": "image/x-wmf",
+    "tiff": "image/tiff",
+    "tif": "image/tiff",
+    "bmp": "image/bmp",
+    "svg": "image/svg+xml",
+    "ico": "image/x-icon",
+    "bin": "application/vnd.openxmlformats-officedocument.oleObject",
+    "vml": "application/vnd.openxmlformats-officedocument.vmlDrawing"
+  },
+  "overrides": {
+    "/word/document.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
+    "/word/styles.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml",
+    "/word/numbering.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml",
+    "/word/settings.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml",
+    "/word/webSettings.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml",
+    "/word/fontTable.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml",
+    "/word/theme/theme1.xml": "application/vnd.openxmlformats-officedocument.theme+xml",
+    "/word/footnotes.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml",
+    "/word/endnotes.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml",
+    "/word/comments.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml",
+    "/word/commentsExtended.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml",
+    "/word/commentsIds.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml",
+    "/word/glossary/document.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml",
+    "/docProps/core.xml": "application/vnd.openxmlformats-package.core-properties+xml",
+    "/docProps/app.xml": "application/vnd.openxmlformats-officedocument.extended-properties+xml",
+    "/docProps/custom.xml": "application/vnd.openxmlformats-officedocument.custom-properties+xml"
+  }
+}

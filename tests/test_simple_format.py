@@ -200,6 +200,109 @@ class TestSimpleFormat(unittest.TestCase):
         self.assertNotIn("runs", p_json)
         self.assertNotIn("properties", p_json)
 
+    def test_reusable_styles_preset(self):
+        """Test resolving style presets from top-level styles dictionary."""
+        doc_json = {
+            "styles": {
+                "customTitle": {
+                    "bold": True,
+                    "size": 36,
+                    "align": "center",
+                    "color": "003366",
+                }
+            },
+            "content": [
+                {
+                    "type": "p",
+                    "style": "customTitle",
+                    "text": "Executive Briefing",
+                }
+            ]
+        }
+        elem = self.doc_handler.to_xml(doc_json)
+        p = elem.find(f".//{qn('w:p')}")
+        self.assertIsNotNone(p)
+        
+        # Check alignment
+        jc = p.find(f".//{qn('w:jc')}")
+        self.assertIsNotNone(jc)
+        self.assertEqual(jc.attrib.get(qn("w:val")), "center")
+        
+        # Check bold, size, color
+        b = p.find(f".//{qn('w:b')}")
+        self.assertIsNotNone(b)
+        sz = p.find(f".//{qn('w:sz')}")
+        self.assertEqual(sz.attrib.get(qn("w:val")), "36")
+        col = p.find(f".//{qn('w:color')}")
+        self.assertEqual(col.attrib.get(qn("w:val")), "003366")
+
+    def test_page_setup_configuration(self):
+        """Test converting page size and margins configuration to sectPr."""
+        doc_json = {
+            "page": {
+                "size": "A4",
+                "orientation": "landscape",
+                "margins": {"top": 72, "bottom": 72, "left": 72, "right": 72}
+            },
+            "content": [
+                {"type": "p", "text": "Landscape page test"}
+            ]
+        }
+        elem = self.doc_handler.to_xml(doc_json)
+        sect = elem.find(f".//{qn('w:sectPr')}")
+        self.assertIsNotNone(sect)
+        
+        pg_sz = sect.find(qn("w:pgSz"))
+        self.assertIsNotNone(pg_sz)
+        self.assertEqual(pg_sz.attrib.get(qn("w:orient")), "landscape")
+        # In A4 landscape, width > height (16838 x 11906)
+        self.assertEqual(pg_sz.attrib.get(qn("w:w")), "16838")
+        self.assertEqual(pg_sz.attrib.get(qn("w:h")), "11906")
+        
+        pg_mar = sect.find(qn("w:pgMar"))
+        self.assertIsNotNone(pg_mar)
+        # 72 points * 20 = 1440 twips (1 inch)
+        self.assertEqual(pg_mar.attrib.get(qn("w:top")), "1440")
+
+    def test_list_block_expansion(self):
+        """Test expanding list item block into bullet and numbered paragraphs."""
+        doc_json = {
+            "content": [
+                {
+                    "type": "list",
+                    "ordered": False,
+                    "items": [
+                        "First bullet",
+                        {"text": "Nested bullet", "level": 1},
+                        {"text": "Third bullet"}
+                    ]
+                }
+            ]
+        }
+        elem = self.doc_handler.to_xml(doc_json)
+        paragraphs = elem.findall(f".//{qn('w:p')}")
+        self.assertEqual(len(paragraphs), 3)
+        
+        # Second paragraph should have level 1
+        num_pr1 = paragraphs[1].find(f".//{qn('w:numPr')}")
+        self.assertIsNotNone(num_pr1)
+        self.assertEqual(num_pr1.find(qn("w:ilvl")).attrib.get(qn("w:val")), "1")
+
+    def test_divider_block(self):
+        """Test creating divider / horizontal rule."""
+        doc_json = {
+            "content": [
+                {"type": "divider"}
+            ]
+        }
+        elem = self.doc_handler.to_xml(doc_json)
+        p = elem.find(f".//{qn('w:p')}")
+        self.assertIsNotNone(p)
+        bdr = p.find(f".//{qn('w:pBdr')}")
+        self.assertIsNotNone(bdr)
+        self.assertIsNotNone(bdr.find(qn("w:bottom")))
+
 
 if __name__ == "__main__":
     unittest.main()
+

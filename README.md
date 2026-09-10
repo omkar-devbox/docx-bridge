@@ -9,8 +9,13 @@ A modular Python engine for bi-directional conversion between DOCX (Wordprocessi
 ├── pyproject.toml
 │
 ├── config/
+│   ├── __init__.py
+│   ├── docx.json
+│   ├── page-sizes.json
 │   ├── namespaces.json
-│   └── master-tags.json
+│   ├── master-tags.json
+│   ├── relationships.json
+│   └── content-types.json
 │
 ├── parser/
 │   ├── xml_to_json.py

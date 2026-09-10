@@ -59,6 +59,106 @@ class TestConfigJson(unittest.TestCase):
         self.assertIn("w:b", style_tags)
         self.assertIn("w:i", style_tags)
 
+    def test_relationships_config_loaded(self):
+        from config import (
+            RELATIONSHIPS_DATA,
+            RELATIONSHIPS_FILE,
+            load_relationships,
+            PACKAGE_RELATIONSHIPS_NS,
+            DOCUMENT_RELATIONSHIPS_NS,
+            RELATIONSHIP_TYPES,
+            INTERNAL_PLUMBING_TARGETS,
+        )
+        self.assertIsInstance(RELATIONSHIPS_DATA, dict)
+        self.assertIn("types", RELATIONSHIPS_DATA)
+        self.assertIn("styles", RELATIONSHIPS_DATA["types"])
+        self.assertIn("numbering", RELATIONSHIPS_DATA["types"])
+        self.assertIn("package_relationships", RELATIONSHIPS_DATA)
+        self.assertEqual(load_relationships(RELATIONSHIPS_FILE), RELATIONSHIPS_DATA)
+        self.assertTrue(PACKAGE_RELATIONSHIPS_NS.startswith("http"))
+        self.assertIn("styles", RELATIONSHIP_TYPES)
+        self.assertIn("styles.xml", INTERNAL_PLUMBING_TARGETS)
+
+    def test_content_types_config_loaded(self):
+        from config import CONTENT_TYPES_DATA, CONTENT_TYPES_FILE, load_content_types
+        self.assertIsInstance(CONTENT_TYPES_DATA, dict)
+        self.assertIn("defaults", CONTENT_TYPES_DATA)
+        self.assertIn("overrides", CONTENT_TYPES_DATA)
+        self.assertIn("rels", CONTENT_TYPES_DATA["defaults"])
+        self.assertIn("/word/document.xml", CONTENT_TYPES_DATA["overrides"])
+        self.assertEqual(load_content_types(CONTENT_TYPES_FILE), CONTENT_TYPES_DATA)
+
+    def test_docx_config_loaded(self):
+        from config import DOCX_CONFIG_DATA, DOCX_CONFIG_FILE, load_docx_config
+        self.assertIsInstance(DOCX_CONFIG_DATA, dict)
+        self.assertIn("page_sizes", DOCX_CONFIG_DATA)
+        self.assertIn("default_margins", DOCX_CONFIG_DATA)
+        self.assertIn("schema_orders", DOCX_CONFIG_DATA)
+        self.assertIn("style_properties", DOCX_CONFIG_DATA)
+        self.assertIn("a4", DOCX_CONFIG_DATA["page_sizes"])
+        self.assertEqual(load_docx_config(DOCX_CONFIG_FILE), DOCX_CONFIG_DATA)
+
+    def test_schema_orders_loaded(self):
+        from config import (
+            PPR_ORDER,
+            RPR_ORDER,
+            TBLPR_ORDER,
+            TBLCELLMAR_ORDER,
+            TRPR_ORDER,
+            TCPR_ORDER,
+            SECTPR_ORDER,
+            STYLE_PROPS,
+            DEFAULT_PAGE_WIDTH,
+            DEFAULT_PAGE_HEIGHT,
+            DEFAULT_ORIENTATION,
+            DEFAULT_MARGINS,
+            get_schema_order,
+        )
+        self.assertIn("pStyle", PPR_ORDER)
+        self.assertIn("rStyle", RPR_ORDER)
+        self.assertIn("tblStyle", TBLPR_ORDER)
+        self.assertIn("top", TBLCELLMAR_ORDER)
+        self.assertIn("cnfStyle", TRPR_ORDER)
+        self.assertIn("cnfStyle", TCPR_ORDER)
+        self.assertIn("headerReference", SECTPR_ORDER)
+        self.assertIn("font", STYLE_PROPS)
+        self.assertEqual(DEFAULT_PAGE_WIDTH, 11906)
+        self.assertEqual(DEFAULT_PAGE_HEIGHT, 16838)
+        self.assertEqual(DEFAULT_ORIENTATION, "portrait")
+        self.assertEqual(DEFAULT_MARGINS.get("top"), 1440)
+        self.assertEqual(get_schema_order("pPr"), PPR_ORDER)
+
+    def test_page_sizes_config_loaded(self):
+        from config import PAGE_SIZES_DATA, PAGE_SIZES_FILE, load_page_sizes, PAGE_SIZES, PAGE_SIZE_MAP
+        self.assertIsInstance(PAGE_SIZES_DATA, dict)
+        self.assertIn("standard", PAGE_SIZES_DATA)
+        self.assertIn("dimensions_map", PAGE_SIZES_DATA)
+        self.assertIn("a4", PAGE_SIZES_DATA["standard"])
+        self.assertEqual(load_page_sizes(PAGE_SIZES_FILE), PAGE_SIZES_DATA)
+        self.assertEqual(PAGE_SIZES.get((11906, 16838)), "a4")
+        self.assertEqual(PAGE_SIZE_MAP.get("a4"), (11906, 16838))
+
+    def test_hardcoded_and_json_parity(self):
+        from config import (
+            NAMESPACES_DATA,
+            MASTER_TAGS_DATA,
+            NAMESPACES_FILE,
+            MASTER_TAGS_FILE,
+            load_namespaces,
+            load_master_tags,
+        )
+        self.assertIsInstance(NAMESPACES_DATA, dict)
+        self.assertIsInstance(MASTER_TAGS_DATA, dict)
+
+        # Verify hardcoded loading matches file-based loading
+        file_ns = load_namespaces(NAMESPACES_FILE)
+        hardcoded_ns = load_namespaces()
+        self.assertEqual(file_ns, hardcoded_ns)
+
+        file_tags = load_master_tags(MASTER_TAGS_FILE)
+        hardcoded_tags = load_master_tags()
+        self.assertEqual(file_tags, hardcoded_tags)
+
 
 class TestHandlers(unittest.TestCase):
     """Test each individual handler."""

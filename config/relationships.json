@@ -1,0 +1,54 @@
+{
+  "namespaces": {
+    "package": "http://schemas.openxmlformats.org/package/2006/relationships",
+    "document": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+  },
+  "types": {
+    "officeDocument": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
+    "styles": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles",
+    "numbering": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering",
+    "image": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
+    "hyperlink": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+    "header": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/header",
+    "footer": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer",
+    "fontTable": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable",
+    "settings": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings",
+    "webSettings": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings",
+    "theme": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme",
+    "footnotes": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes",
+    "endnotes": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes",
+    "comments": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments",
+    "commentsExtended": "http://schemas.microsoft.com/office/2011/relationships/commentsExtended",
+    "commentsIds": "http://schemas.microsoft.com/office/2016/09/relationships/commentsIds",
+    "diagramData": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramData",
+    "diagramLayout": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramLayout",
+    "diagramColors": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramColors",
+    "diagramQuickStyle": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramQuickStyle",
+    "diagramDrawing": "http://schemas.microsoft.com/office/2007/relationships/diagramDrawing",
+    "customXml": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml",
+    "customXmlProps": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXmlProps",
+    "coreProperties": "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties",
+    "extendedProperties": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties",
+    "customProperties": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties",
+    "thumbnail": "http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail",
+    "glossaryDocument": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/glossaryDocument",
+    "vbaProject": "http://schemas.microsoft.com/office/2006/relationships/vbaProject",
+    "oleObject": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject",
+    "package": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/package"
+  },
+  "package_relationships": [
+    {
+      "id": "rId1",
+      "type": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
+      "target": "word/document.xml"
+    }
+  ],
+  "internal_plumbing_targets": [
+    "styles.xml",
+    "numbering.xml",
+    "fontTable.xml",
+    "settings.xml",
+    "webSettings.xml",
+    "theme/theme1.xml"
+  ]
+}

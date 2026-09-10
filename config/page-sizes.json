@@ -1,0 +1,113 @@
+{
+  "standard": {
+    "a4": {
+      "name": "A4",
+      "width": 11906,
+      "height": 16838,
+      "code": 9,
+      "unit": "dxa"
+    },
+    "letter": {
+      "name": "Letter",
+      "width": 12240,
+      "height": 15840,
+      "code": 1,
+      "unit": "dxa"
+    },
+    "legal": {
+      "name": "Legal",
+      "width": 12240,
+      "height": 20160,
+      "code": 5,
+      "unit": "dxa"
+    },
+    "a3": {
+      "name": "A3",
+      "width": 16838,
+      "height": 23811,
+      "code": 8,
+      "unit": "dxa"
+    },
+    "a5": {
+      "name": "A5",
+      "width": 8419,
+      "height": 11906,
+      "code": 11,
+      "unit": "dxa"
+    },
+    "a6": {
+      "name": "A6",
+      "width": 5953,
+      "height": 8419,
+      "code": 70,
+      "unit": "dxa"
+    },
+    "b4": {
+      "name": "B4 (JIS)",
+      "width": 14570,
+      "height": 20636,
+      "code": 12,
+      "unit": "dxa"
+    },
+    "b5": {
+      "name": "B5 (JIS)",
+      "width": 10318,
+      "height": 14570,
+      "code": 13,
+      "unit": "dxa"
+    },
+    "tabloid": {
+      "name": "Tabloid / 11x17",
+      "width": 15840,
+      "height": 24480,
+      "code": 3,
+      "unit": "dxa"
+    },
+    "ledger": {
+      "name": "Ledger",
+      "width": 24480,
+      "height": 15840,
+      "code": 4,
+      "unit": "dxa"
+    },
+    "statement": {
+      "name": "Statement / Half Letter",
+      "width": 7920,
+      "height": 12240,
+      "code": 6,
+      "unit": "dxa"
+    },
+    "executive": {
+      "name": "Executive",
+      "width": 10368,
+      "height": 15120,
+      "code": 7,
+      "unit": "dxa"
+    },
+    "folio": {
+      "name": "Folio",
+      "width": 12240,
+      "height": 18720,
+      "code": 14,
+      "unit": "dxa"
+    }
+  },
+  "dimensions_map": {
+    "11906,16838": "a4",
+    "16838,11906": "a4",
+    "12240,15840": "letter",
+    "15840,12240": "letter",
+    "12240,20160": "legal",
+    "20160,12240": "legal",
+    "16838,23811": "a3",
+    "23811,16838": "a3",
+    "8419,11906": "a5",
+    "11906,8419": "a5",
+    "5953,8419": "a6",
+    "8419,5953": "a6",
+    "15840,24480": "tabloid",
+    "24480,15840": "tabloid",
+    "10368,15120": "executive",
+    "15120,10368": "executive"
+  }
+}
