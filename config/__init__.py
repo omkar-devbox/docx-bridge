@@ -24,6 +24,7 @@ MASTER_TAGS_FILE = _CONFIG_DIR / "master-tags.json"  # Master tag mappings
 RELATIONSHIPS_FILE = _CONFIG_DIR / "relationships.json"  # Relationship mappings
 CONTENT_TYPES_FILE = _CONFIG_DIR / "content-types.json"  # Content type mappings
 DOCX_CONFIG_FILE = _CONFIG_DIR / "docx.json"  # DOCX configuration
+DOC_CONFIG_FILE = _CONFIG_DIR / "doc.json"  # DOC (Word 97-2003) configuration
 PAGE_SIZES_FILE = _CONFIG_DIR / "page-sizes.json"  # Page size definitions
 
 
@@ -36,6 +37,7 @@ MASTER_TAGS_DATA: dict[str, dict[str, str]] = load_json(MASTER_TAGS_FILE)  # Loa
 RELATIONSHIPS_DATA: dict[str, Any] = load_json(RELATIONSHIPS_FILE)  # Loaded relationships
 CONTENT_TYPES_DATA: dict[str, Any] = load_json(CONTENT_TYPES_FILE)  # Loaded content types
 DOCX_CONFIG_DATA: dict[str, Any] = load_json(DOCX_CONFIG_FILE)  # Loaded DOCX configuration
+DOC_CONFIG_DATA: dict[str, Any] = load_json(DOC_CONFIG_FILE)  # Loaded DOC configuration
 PAGE_SIZES_DATA: dict[str, Any] = load_json(PAGE_SIZES_FILE)  # Loaded page sizes
 
 
@@ -160,6 +162,20 @@ def load_docx_config(
         return load_json(Path(filepath))  # Load custom DOCX configuration
 
     return DOCX_CONFIG_DATA  # Use default DOCX configuration
+
+
+# --------------------------------
+# DOC Configuration Loading
+# --------------------------------
+
+def load_doc_config(
+    filepath: Path | str | None = None,
+) -> dict[str, Any]:
+
+    if filepath is not None:
+        return load_json(Path(filepath))  # Load custom DOC configuration
+
+    return DOC_CONFIG_DATA  # Use default DOC configuration
 
 
 # --------------------------------
@@ -337,18 +353,21 @@ __all__ = [
     "RELATIONSHIPS_DATA",
     "CONTENT_TYPES_DATA",
     "DOCX_CONFIG_DATA",
+    "DOC_CONFIG_DATA",
     "PAGE_SIZES_DATA",
     "NAMESPACES_FILE",
     "MASTER_TAGS_FILE",
     "RELATIONSHIPS_FILE",
     "CONTENT_TYPES_FILE",
     "DOCX_CONFIG_FILE",
+    "DOC_CONFIG_FILE",
     "PAGE_SIZES_FILE",
     "load_namespaces",
     "load_master_tags",
     "load_relationships",
     "load_content_types",
     "load_docx_config",
+    "load_doc_config",
     "load_page_sizes",
     "NAMESPACES",
     "REVERSE_NAMESPACES",

@@ -7,9 +7,9 @@ and no raw XML in JSON output across paragraphs, runs, tables, sections, and med
 import unittest
 from pathlib import Path
 import xml.etree.ElementTree as ET
-from docx.reader import DocxReader
+from formats.docx.reader import DocxReader
 from main import docx_to_json, json_to_docx
-from handlers.base import qn, local_name
+from handlers.docx.base import qn, local_name
 from utils.json import load_json
 
 

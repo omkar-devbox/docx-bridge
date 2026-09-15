@@ -3,10 +3,10 @@
 import unittest
 from parser.xml_to_json import XmlToJsonParser
 from parser.json_to_xml import JsonToXmlParser
-from handlers.document import DocumentHandler
-from handlers.media import MediaHandler
-from handlers.styles import StylesHandler
-from handlers.base import qn
+from handlers.docx.document import DocumentHandler
+from handlers.docx.media import MediaHandler
+from handlers.docx.styles import StylesHandler
+from handlers.docx.base import qn
 
 
 SAMPLE_SECTION_XML = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>

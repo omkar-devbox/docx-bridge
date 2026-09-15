@@ -98,6 +98,21 @@ class TestConfigJson(unittest.TestCase):
         self.assertIn("a4", DOCX_CONFIG_DATA["page_sizes"])
         self.assertEqual(load_docx_config(DOCX_CONFIG_FILE), DOCX_CONFIG_DATA)
 
+    def test_doc_config_loaded(self):
+        from config import DOC_CONFIG_DATA, DOC_CONFIG_FILE, load_doc_config
+        self.assertIsInstance(DOC_CONFIG_DATA, dict)
+        self.assertIn("format_info", DOC_CONFIG_DATA)
+        self.assertIn("streams", DOC_CONFIG_DATA)
+        self.assertIn("fib", DOC_CONFIG_DATA)
+        self.assertIn("summary_information_pids", DOC_CONFIG_DATA)
+        self.assertIn("document_summary_pids", DOC_CONFIG_DATA)
+        self.assertIn("sprm_categories", DOC_CONFIG_DATA)
+        self.assertIn("property_mappings", DOC_CONFIG_DATA)
+        self.assertIn("default_style", DOC_CONFIG_DATA)
+        self.assertIn("default_margins", DOC_CONFIG_DATA)
+        self.assertEqual(DOC_CONFIG_DATA["format_info"]["extension"], ".doc")
+        self.assertEqual(load_doc_config(DOC_CONFIG_FILE), DOC_CONFIG_DATA)
+
     def test_schema_orders_loaded(self):
         from config import (
             PPR_ORDER,
@@ -352,6 +367,105 @@ class TestHandlers(unittest.TestCase):
         p_handler_by_type = registry.get_handler_for_type("paragraph")
         self.assertEqual(p_handler, p_handler_by_type)
 
+    def test_common_units(self):
+        from handlers.common.units import (
+            dxa_to_pt,
+            pt_to_dxa,
+            inches_to_dxa,
+            dxa_to_inches,
+            emu_to_dxa,
+            dxa_to_emu,
+            half_points_to_pt,
+            pt_to_half_points,
+        )
+        self.assertEqual(dxa_to_pt(1440), 72.0)
+        self.assertEqual(pt_to_dxa(72), 1440)
+        self.assertEqual(inches_to_dxa(1), 1440)
+        self.assertEqual(dxa_to_inches(1440), 1.0)
+        self.assertEqual(dxa_to_emu(1), 635)
+        self.assertEqual(emu_to_dxa(635), 1)
+        self.assertEqual(half_points_to_pt(24), 12.0)
+        self.assertEqual(pt_to_half_points(12), 24)
+
+    def test_common_color(self):
+        from handlers.common.color import bgr_to_hex, hex_to_bgr, normalize_hex_color
+        # Red in BGR is 0x0000FF (255)
+        self.assertEqual(bgr_to_hex(0x0000FF), "FF0000")
+        # Green in BGR is 0x00FF00 (65280)
+        self.assertEqual(bgr_to_hex(0x00FF00), "00FF00")
+        # Blue in BGR is 0xFF0000 (16711680)
+        self.assertEqual(bgr_to_hex(0xFF0000), "0000FF")
+        # Hex to BGR round-trip
+        self.assertEqual(hex_to_bgr("FF0000"), 0x0000FF)
+        self.assertEqual(hex_to_bgr("0000FF"), 0xFF0000)
+        # Normalization
+        self.assertEqual(normalize_hex_color("#ff00aa"), "FF00AA")
+        self.assertEqual(normalize_hex_color("auto"), "auto")
+
+    def test_doc_handlers(self):
+        from handlers.doc import (
+            DocHandlerRegistry,
+            DocDocumentHandler,
+            DocParagraphHandler,
+            DocRunHandler,
+            DocTableHandler,
+            DocSectionsHandler,
+        )
+        registry = DocHandlerRegistry()
+        self.assertIsInstance(registry.run_handler, DocRunHandler)
+        self.assertIsInstance(registry.paragraph_handler, DocParagraphHandler)
+        self.assertIsInstance(registry.table_handler, DocTableHandler)
+        self.assertIsInstance(registry.document_handler, DocDocumentHandler)
+        self.assertIsInstance(registry.sections_handler, DocSectionsHandler)
+
+        # Run handler test
+        run_json = registry.run_handler.to_json({
+            "text": "Legacy DOC test",
+            "sprmCFBold": 1,
+            "sprmCFItalic": 0,
+            "sprmCHps": 28,
+            "sprmCColor": 0x0000FF,  # Red in BGR
+        })
+        self.assertEqual(run_json["type"], "run")
+        self.assertEqual(run_json["text"], "Legacy DOC test")
+        self.assertTrue(run_json["bold"])
+        self.assertEqual(run_json["size"], 28)
+        self.assertEqual(run_json["color"], "FF0000")
+
+        # Paragraph handler test
+        p_json = registry.paragraph_handler.to_json({
+            "sprmPJc": 1,  # Center
+            "sprmPDyaBefore": 240,
+            "text": "Centered heading",
+        })
+        self.assertEqual(p_json["type"], "paragraph")
+        self.assertEqual(p_json["align"], "center")
+        self.assertEqual(p_json["spacing"]["before"], 240)
+
+        # Sections handler test
+        sec_json = registry.sections_handler.to_json({
+            "sprmSDyaTop": 1440,
+            "sprmSDyaBottom": 1440,
+        })
+        self.assertEqual(sec_json["page"]["margins"]["top"], 1440)
+        self.assertEqual(sec_json["page"]["margins"]["bottom"], 1440)
+
+    def test_docx_direct_imports(self):
+        from handlers.docx import (
+            DocxHandlerRegistry,
+            DocumentHandler as DocxDocHandler,
+            ParagraphHandler as DocxPHandler,
+            RunHandler as DocxRHandler,
+            TableHandler as DocxTHandler,
+            BaseHandler as DocxBase,
+        )
+        reg = DocxHandlerRegistry()
+        self.assertIsInstance(reg.document_handler, DocxDocHandler)
+        self.assertIsInstance(reg.paragraph_handler, DocxPHandler)
+        self.assertIsInstance(reg.run_handler, DocxRHandler)
+        self.assertIsInstance(reg.table_handler, DocxTHandler)
+
 
 if __name__ == "__main__":
     unittest.main()
+

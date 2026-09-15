@@ -1,0 +1,88 @@
+"""Common handlers, units, color conversions, and shared utilities."""
+
+from handlers.common.base import CommonBaseHandler
+from handlers.common.units import (
+    DXA_PER_INCH,
+    DXA_PER_CM,
+    DXA_PER_PT,
+    EMUS_PER_INCH,
+    EMUS_PER_CM,
+    EMUS_PER_PT,
+    EMUS_PER_DXA,
+    HALF_POINTS_PER_PT,
+    EIGHTH_POINTS_PER_PT,
+    dxa_to_pt,
+    pt_to_dxa,
+    inches_to_dxa,
+    dxa_to_inches,
+    cm_to_dxa,
+    dxa_to_cm,
+    emu_to_dxa,
+    dxa_to_emu,
+    emu_to_pt,
+    pt_to_emu,
+    inches_to_emu,
+    emu_to_inches,
+    half_points_to_pt,
+    pt_to_half_points,
+    eighth_points_to_pt,
+    pt_to_eighth_points,
+)
+from handlers.common.color import (
+    bgr_to_hex,
+    hex_to_bgr,
+    hex_to_rgb,
+    rgb_to_hex,
+    normalize_hex_color,
+)
+from handlers.common.helpers import (
+    to_number,
+    to_bool,
+    clean_dict,
+    normalize_alignment,
+    ALIGNMENT_MAP,
+)
+from handlers.common.registry import BaseHandlerRegistry
+
+__all__ = [
+    "CommonBaseHandler",
+    "BaseHandlerRegistry",
+    # Units
+    "DXA_PER_INCH",
+    "DXA_PER_CM",
+    "DXA_PER_PT",
+    "EMUS_PER_INCH",
+    "EMUS_PER_CM",
+    "EMUS_PER_PT",
+    "EMUS_PER_DXA",
+    "HALF_POINTS_PER_PT",
+    "EIGHTH_POINTS_PER_PT",
+    "dxa_to_pt",
+    "pt_to_dxa",
+    "inches_to_dxa",
+    "dxa_to_inches",
+    "cm_to_dxa",
+    "dxa_to_cm",
+    "emu_to_dxa",
+    "dxa_to_emu",
+    "emu_to_pt",
+    "pt_to_emu",
+    "inches_to_emu",
+    "emu_to_inches",
+    "half_points_to_pt",
+    "pt_to_half_points",
+    "eighth_points_to_pt",
+    "pt_to_eighth_points",
+    # Colors
+    "bgr_to_hex",
+    "hex_to_bgr",
+    "hex_to_rgb",
+    "rgb_to_hex",
+    "normalize_hex_color",
+    # Helpers
+    "to_number",
+    "to_bool",
+    "clean_dict",
+    "normalize_alignment",
+    "ALIGNMENT_MAP",
+]

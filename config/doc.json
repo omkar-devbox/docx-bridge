@@ -1,0 +1,312 @@
+{
+  "core": {
+    "WordDocument": "wordDocumentStream",
+    "0Table": "tableStream0",
+    "1Table": "tableStream1",
+    "Data": "dataStream",
+    "\u0005SummaryInformation": "summaryInformation",
+    "\u0005DocumentSummaryInformation": "documentSummaryInformation",
+    "\u0001CompObj": "compoundObject",
+    "ObjectPool": "objectPool",
+    "Macros": "macros"
+  },
+  "fib": {
+    "magicNumber": 42617,
+    "magicNumberHex": "0xA5EC",
+    "baseSize": 32,
+    "headerOffsets": {
+      "wIdent": 0,
+      "nFib": 2,
+      "nProduct": 4,
+      "lid": 6,
+      "pnNext": 8,
+      "flags": 10,
+      "nFibBack": 12,
+      "lKey": 14,
+      "envr": 18,
+      "flags2": 19,
+      "fcMin": 24,
+      "fcMac": 28
+    },
+    "versions": {
+      "0x00C1": "Word 6.0 / Word 95",
+      "0x00C3": "Word 97",
+      "0x00D9": "Word 2000",
+      "0x0101": "Word 2002",
+      "0x010C": "Word 2003",
+      "0x0112": "Word 2003 SP3"
+    }
+  },
+  "fib_extended": {
+    "description": "Extended FIB pointers required for 100% extraction (Text, Styles, Tables)",
+    "fcStshf": 104,
+    "lcbStshf": 108,
+    "fcPlcfBteChpx": 192,
+    "lcbPlcfBteChpx": 196,
+    "fcPlcfBtePapx": 200,
+    "lcbPlcfBtePapx": 204,
+    "fcPlcfSea": 208,
+    "lcbPlcfSea": 212,
+    "fcSttbfBkmk": 264,
+    "lcbSttbfBkmk": 268,
+    "fcPlcfBkf": 272,
+    "lcbPlcfBkf": 276,
+    "fcPlcfBkl": 280,
+    "lcbPlcfBkl": 284,
+    "fcCmds": 288,
+    "lcbCmds": 292,
+    "fcDop": 344,
+    "lcbDop": 348,
+    "fcClx": 416,
+    "lcbClx": 420,
+    "fcDggInfo": 400,
+    "lcbDggInfo": 404,
+    "fcPlfLfo": 706,
+    "lcbPlfLfo": 710,
+    "fcPlcBteLvc": 714,
+    "lcbPlcBteLvc": 718,
+    "fcPlcfTxbxBkd": 738,
+    "lcbPlcfTxbxBkd": 742,
+    "fcPlcfTxbxHdrBkd": 746,
+    "lcbPlcfTxbxHdrBkd": 750
+  },
+  "piece_table": {
+    "description": "Complex properties for reading fragmented text (Clx, Pcd, FcCompressed)",
+    "clx_prm": 1,
+    "clx_plcpcd": 2,
+    "pcd_size": 8,
+    "fc_compressed_mask": "0x40000000",
+    "fc_compressed_flag": 1073741824
+  },
+  "stylesheet": {
+    "description": "STSH (Style Sheet) mapping for custom formatting",
+    "stshif_size": 18,
+    "sti_max": 4094,
+    "stc_paragraph": 1,
+    "stc_character": 2,
+    "stc_table": 3,
+    "stc_numbering": 4
+  },
+  "lists": {
+    "description": "Mapping for Bullets and Numbering (LST, LFO, LFOLVL)",
+    "lstf_size": 28,
+    "lvlf_size": 28,
+    "lfof_size": 16
+  },
+  "escher_graphics": {
+    "description": "Office Art Object (Images, Shapes) Identifiers",
+    "msofbtDggContainer": "0xF000",
+    "msofbtDgg": "0xF006",
+    "msofbtBstoreContainer": "0xF001",
+    "msofbtBSE": "0xF007",
+    "msofbtDgContainer": "0xF002",
+    "msofbtDg": "0xF008",
+    "msofbtSpgrContainer": "0xF003",
+    "msofbtSpContainer": "0xF004",
+    "msofbtSpgr": "0xF009",
+    "msofbtSp": "0xF00A",
+    "msofbtOPT": "0xF00B",
+    "msofbtClientData": "0xF011"
+  },
+  "sprm": {
+    "character": {
+      "sprmCFBold": "bold",
+      "sprmCFItalic": "italic",
+      "sprmCFStrike": "strike",
+      "sprmCFOutline": "outline",
+      "sprmCFShadow": "shadow",
+      "sprmCFSmallCaps": "smallCaps",
+      "sprmCFCaps": "caps",
+      "sprmCFVanish": "vanish",
+      "sprmCKul": "underline",
+      "sprmCDxaSpace": "spacing",
+      "sprmCIco": "colorIndex",
+      "sprmCHps": "fontSize",
+      "sprmCHpsPos": "position",
+      "sprmCRgFtc0": "fontFamily",
+      "sprmCRgFtc1": "fontFamilyEastAsia",
+      "sprmCColor": "color",
+      "sprmCHighlight": "highlight",
+      "sprmCIdslRMark": "revisionStyle"
+    },
+    "paragraph": {
+      "sprmPIstd": "styleId",
+      "sprmPJc": "alignment",
+      "sprmPFKeep": "keepLines",
+      "sprmPFKeepFollow": "keepWithNext",
+      "sprmPFPageBreakBefore": "pageBreakBefore",
+      "sprmPIlvl": "outlineLevel",
+      "sprmPIlfo": "numberingListId",
+      "sprmPDxaRight": "indentRight",
+      "sprmPDxaLeft": "indentLeft",
+      "sprmPDxaLeft1": "indentFirstLine",
+      "sprmPDyaLine": "lineSpacing",
+      "sprmPDyaBefore": "spaceBefore",
+      "sprmPDyaAfter": "spaceAfter",
+      "sprmPFInTable": "inTable",
+      "sprmPShd": "shading"
+    },
+    "section": {
+      "sprmSDmPaperReq": "paperSizeCode",
+      "sprmSDxaColumns": "columnWidth",
+      "sprmSBkc": "sectionBreakType",
+      "sprmSDxaLeft": "marginLeft",
+      "sprmSDxaRight": "marginRight",
+      "sprmSDyaTop": "marginTop",
+      "sprmSDyaBottom": "marginBottom",
+      "sprmSDzaGutter": "gutter",
+      "sprmSDyaHdrTop": "headerMargin",
+      "sprmSDyaHdrBottom": "footerMargin"
+    },
+    "table": {
+      "sprmTDefTable": "tableDefinition",
+      "sprmTDxaLeft": "tableIndent",
+      "sprmTDxaGapHalf": "cellGap",
+      "sprmTJc": "alignment",
+      "sprmTDyaRowHeight": "rowHeight",
+      "sprmTTableBorders": "borders",
+      "sprmTWidthCell": "cellWidth"
+    }
+  },
+  "alignment_values": {
+    "0": "left",
+    "1": "center",
+    "2": "right",
+    "3": "both"
+  },
+  "underline_values": {
+    "0": "none",
+    "1": "single",
+    "2": "word",
+    "3": "double",
+    "4": "dotted",
+    "5": "hidden",
+    "6": "thick",
+    "7": "dash",
+    "8": "dotDash",
+    "9": "dotDotDash",
+    "10": "wave"
+  },
+  "default_margins": {
+    "top": 1440,
+    "right": 1800,
+    "bottom": 1440,
+    "left": 1800,
+    "header": 720,
+    "footer": 720,
+    "gutter": 0
+  },
+  "units": {
+    "dxaPerInch": 1440,
+    "dxaPerCm": 567,
+    "dxaPerPt": 20,
+    "emusPerInch": 914400,
+    "emusPerCm": 360000,
+    "emusPerPt": 12700,
+    "emusPerDxa": 635,
+    "halfPointsPerPt": 2,
+    "eighthPointsPerPt": 8
+  },
+  "encodings": {
+    "1252": "windows-1252",
+    "1250": "windows-1250",
+    "1251": "windows-1251",
+    "1253": "windows-1253",
+    "1254": "windows-1254",
+    "1255": "windows-1255",
+    "1256": "windows-1256",
+    "1257": "windows-1257",
+    "1258": "windows-1258",
+    "932": "shift_jis",
+    "936": "gb2312",
+    "949": "euc-kr",
+    "950": "big5"
+  },
+  "page_sizes": {
+    "a4": {
+      "width": 11906,
+      "height": 16838,
+      "code": 9
+    },
+    "letter": {
+      "width": 12240,
+      "height": 15840,
+      "code": 1
+    },
+    "legal": {
+      "width": 12240,
+      "height": 20160,
+      "code": 5
+    }
+  },
+  "format_info": {
+    "name": "Microsoft Word 97-2003 Document",
+    "extension": ".doc",
+    "mime_type": "application/msword"
+  },
+  "streams": {
+    "WordDocument": "wordDocumentStream",
+    "0Table": "tableStream0",
+    "1Table": "tableStream1",
+    "Data": "dataStream",
+    "\u0005SummaryInformation": "summaryInformation",
+    "\u0005DocumentSummaryInformation": "documentSummaryInformation",
+    "\u0001CompObj": "compoundObject",
+    "ObjectPool": "objectPool",
+    "Macros": "macros"
+  },
+  "summary_information_pids": {
+    "2": "title",
+    "3": "subject",
+    "4": "author",
+    "5": "keywords",
+    "6": "comments",
+    "7": "template",
+    "8": "lastSavedBy",
+    "9": "revisionNumber",
+    "10": "editTime",
+    "11": "lastPrinted",
+    "12": "createTime",
+    "13": "lastSavedTime",
+    "14": "pageCount",
+    "15": "wordCount",
+    "16": "charCount",
+    "18": "applicationName",
+    "19": "security"
+  },
+  "document_summary_pids": {
+    "2": "category",
+    "3": "presentationTarget",
+    "4": "bytesCount",
+    "5": "linesCount",
+    "6": "paragraphsCount",
+    "7": "slidesCount",
+    "8": "notesCount",
+    "9": "hiddenCount",
+    "10": "mmClipsCount",
+    "11": "scaleCrop",
+    "14": "manager",
+    "15": "company",
+    "16": "linksDirty"
+  },
+  "sprm_categories": [
+    "character",
+    "paragraph",
+    "section",
+    "table"
+  ],
+  "property_mappings": {
+    "bold": "sprmCFBold",
+    "italic": "sprmCFItalic",
+    "underline": "sprmCKul",
+    "size": "sprmCHps",
+    "color": "sprmCColor",
+    "font": "sprmCRgFtc0",
+    "alignment": "sprmPJc",
+    "spaceBefore": "sprmPDyaBefore",
+    "spaceAfter": "sprmPDyaAfter",
+    "indentLeft": "sprmPDxaLeft",
+    "indentFirstLine": "sprmPDxaLeft1"
+  },
+  "default_style": "Normal"
+}

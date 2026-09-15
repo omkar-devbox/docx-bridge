@@ -3,10 +3,10 @@
 import unittest
 from pathlib import Path
 import xml.etree.ElementTree as ET
-from docx.reader import DocxReader
+from formats.docx.reader import DocxReader
 from main import docx_to_json, json_to_docx
 from utils.json import load_json
-from handlers.base import qn
+from handlers.docx.base import qn
 
 
 class TestAuditFidelity(unittest.TestCase):

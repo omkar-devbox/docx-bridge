@@ -16,9 +16,13 @@ def load_json(filepath):
         return json.load(file)
 
 
-# -------------------------------------------------
-# Save JSON File
-# -------------------------------------------------
+def _json_default(obj):
+    if isinstance(obj, (bytes, bytearray)):
+        import base64
+        return base64.b64encode(obj).decode("ascii")
+    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
+
+
 def save_json(data, filepath):
 
     # Create the parent directory if it does not exist.
@@ -35,6 +39,7 @@ def save_json(data, filepath):
             file,
             indent=2,
             ensure_ascii=False,
+            default=_json_default,
         )
 
 

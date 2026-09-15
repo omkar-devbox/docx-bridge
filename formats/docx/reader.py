@@ -92,6 +92,82 @@ class DocxReader:
         return media
 
     # --------------------------------
+    # Headers & Footers
+    # --------------------------------
+
+    def get_headers_xml(self) -> dict[str, str]:
+        headers: dict[str, str] = {}
+        for name in self.archive.namelist():
+            if name.startswith("word/header") and name.endswith(".xml"):
+                headers[name] = self.read_xml_part(name)
+        return headers
+
+    def get_footers_xml(self) -> dict[str, str]:
+        footers: dict[str, str] = {}
+        for name in self.archive.namelist():
+            if name.startswith("word/footer") and name.endswith(".xml"):
+                footers[name] = self.read_xml_part(name)
+        return footers
+
+    # --------------------------------
+    # Document Metadata
+    # --------------------------------
+
+    def get_core_properties_xml(self) -> str | None:
+        part_name = "docProps/core.xml"
+        if part_name in self.archive.namelist():
+            return self.read_xml_part(part_name)
+        return None
+
+    def get_app_properties_xml(self) -> str | None:
+        part_name = "docProps/app.xml"
+        if part_name in self.archive.namelist():
+            return self.read_xml_part(part_name)
+        return None
+
+    # --------------------------------
+    # Footnotes & Endnotes
+    # --------------------------------
+
+    def get_footnotes_xml(self) -> str | None:
+        part_name = "word/footnotes.xml"
+        if part_name in self.archive.namelist():
+            return self.read_xml_part(part_name)
+        return None
+
+    def get_endnotes_xml(self) -> str | None:
+        part_name = "word/endnotes.xml"
+        if part_name in self.archive.namelist():
+            return self.read_xml_part(part_name)
+        return None
+
+    # --------------------------------
+    # Comments
+    # --------------------------------
+
+    def get_comments_xml(self) -> str | None:
+        part_name = "word/comments.xml"
+        if part_name in self.archive.namelist():
+            return self.read_xml_part(part_name)
+        return None
+
+    # --------------------------------
+    # Settings
+    # --------------------------------
+
+    def get_settings_xml(self) -> str | None:
+        part_name = "word/settings.xml"
+        if part_name in self.archive.namelist():
+            return self.read_xml_part(part_name)
+        return None
+
+    def get_web_settings_xml(self) -> str | None:
+        part_name = "word/webSettings.xml"
+        if part_name in self.archive.namelist():
+            return self.read_xml_part(part_name)
+        return None
+
+    # --------------------------------
     # Archive Lifecycle
     # --------------------------------
 
