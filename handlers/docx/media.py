@@ -2899,7 +2899,7 @@ class MediaHandler(BaseHandler):
         data: dict[str, Any],
     ) -> None:
 
-        from utils.xml import parse_xml_string
+        from utils.docx.xml import parse_xml_string
 
         raw_xml = data.get(
             "graphicDataXml"

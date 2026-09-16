@@ -126,7 +126,10 @@ class PropertySetStream:
                 elif v_type == VT_I4 and len(val_data) >= 4:
                     val = struct.unpack_from("<i", val_data, 0)[0]
                 elif v_type == VT_I2 and len(val_data) >= 2:
-                    val = struct.unpack_from("<h", val_data, 0)[0]
+                    if pid == 1:  # PID_CODEPAGE
+                        val = struct.unpack_from("<H", val_data, 0)[0]
+                    else:
+                        val = struct.unpack_from("<h", val_data, 0)[0]
                 elif v_type == VT_FILETIME and len(val_data) >= 8:
                     ft = struct.unpack_from("<Q", val_data, 0)[0]
                     dt = filetime_to_datetime(ft)
@@ -166,11 +169,14 @@ class PropertySetStream:
     def _pack_value(cls, pid: int, val: Any) -> Optional[bytes]:
         """Pack a Python value into OLE property bytes with type prefix."""
         if pid == 1:  # PID_CODEPAGE
-            return struct.pack("<IH", VT_I2, int(val)) + b"\x00\x00"
+            return struct.pack("<IH", VT_I2, int(val) & 0xFFFF) + b"\x00\x00"
         if isinstance(val, bool):
             return struct.pack("<IH", VT_BOOL, 0xFFFF if val else 0x0000) + b"\x00\x00"
         elif isinstance(val, int):
-            return struct.pack("<Ii", VT_I4, int(val))
+            int_val = int(val)
+            if not (-2147483648 <= int_val <= 2147483647):
+                int_val = struct.unpack("<i", struct.pack("<I", int_val & 0xFFFFFFFF))[0]
+            return struct.pack("<Ii", VT_I4, int_val)
         elif isinstance(val, str):
             if "T" in val and len(val) >= 19:
                 try:
@@ -322,7 +328,15 @@ class StyleEntry:
 
 
 class StshParser:
-    """Parses STSH stylesheet structures from the Table stream."""
+    """Parses STSH stylesheet structures from the Table stream.
+
+    Lossless round-trip strategy:
+    - 'ownParagraph' / 'ownRun'  : the style's own direct UPX properties (not inherited)
+    - 'paragraph' / 'run'        : the fully resolved (effective) properties for rendering
+    - 'rawPapxGrpprl' / 'rawChpxGrpprl' : raw UPX GRPPRL bytes (hex) for verbatim reconstruction
+    - 'aliases'                  : alias names from the xstz comma-separated string
+    - 'istdBase'                 : parent style slot index (0xFFFF = no parent)
+    """
 
     @classmethod
     def parse(cls, data: bytes) -> Dict[str, Any]:
@@ -349,26 +363,47 @@ class StshParser:
             if len(std_bytes) < cbSTDBaseInFile:
                 continue
 
-            # Parse STD
+            # Parse STD base fields
             w0, w1 = struct.unpack_from("<HH", std_bytes, 0)
-            sti = w0 & 0x0FFF
-            stk = w1 & 0x000F
+            sti   = w0 & 0x0FFF
+            stk   = w1 & 0x000F
             istdBase = (w1 >> 4) & 0x0FFF
+            
+            raw_stdf_base = std_bytes[:cbSTDBaseInFile].hex()
 
-            # Name is at std_bytes[cbSTDBaseInFile:], Pascal string (xstz)
+            # --- Name / aliases from xstz (Pascal UTF-16LE string) ---
             name_part = std_bytes[cbSTDBaseInFile:]
-            name = ""
+            name: str = ""
+            aliases: List[str] = []
             xstz_len = 0
+            full_xstz_str = ""
+
             if len(name_part) >= 2:
                 cch = struct.unpack_from("<H", name_part, 0)[0]
                 if cch > 0 and 2 + cch * 2 <= len(name_part):
-                    name = name_part[2 : 2 + cch * 2].decode("utf-16le", errors="replace").rstrip("\x00")
-                    xstz_len = 2 + (cch + 1) * 2
-                elif len(name_part) >= 1:
-                    cch1 = name_part[0]
-                    if cch1 > 0 and 1 + cch1 <= len(name_part):
-                        name = name_part[1 : 1 + cch1].decode("latin-1", errors="replace").rstrip("\x00")
-                        xstz_len = 1 + cch1 + 1
+                    full_xstz_str = (
+                        name_part[2 : 2 + cch * 2]
+                        .decode("utf-16le", errors="replace")
+                        .rstrip("\x00")
+                    )
+                    xstz_len = 2 + (cch + 1) * 2  # cch + chars + NUL
+                else:
+                    xstz_len = 4  # cch==0 → still 4 bytes
+            elif len(name_part) >= 1:
+                cch1 = name_part[0]
+                if cch1 > 0 and 1 + cch1 <= len(name_part):
+                    full_xstz_str = (
+                        name_part[1 : 1 + cch1]
+                        .decode("latin-1", errors="replace")
+                        .rstrip("\x00")
+                    )
+                    xstz_len = 1 + cch1 + 1
+
+            # Split "Primary Name,Alias1,Alias2" → name + aliases list
+            if full_xstz_str:
+                parts = [p.strip() for p in full_xstz_str.split(",")]
+                name = parts[0]
+                aliases = parts[1:] if len(parts) > 1 else []
 
             if not name:
                 builtin_names = {
@@ -388,17 +423,22 @@ class StshParser:
                 }
                 name = builtin_names.get(sti, f"Style{istd}")
 
-            style_type_str = {1: "paragraph", 2: "character", 3: "table", 4: "numbering"}.get(stk, "paragraph")
+            style_type_str = (
+                {1: "paragraph", 2: "character", 3: "table", 4: "numbering"}.get(stk, "paragraph")
+            )
 
-            # Parse formatting SPRMs from UPX
+            # --- Parse UPX formatting blocks ---
             upx_offset = cbSTDBaseInFile + xstz_len
             if upx_offset % 2 != 0:
                 upx_offset += 1
 
             rem = std_bytes[upx_offset:]
             rem_off = 0
-            p_props: Dict[str, Any] = {}
-            c_props: Dict[str, Any] = {}
+            own_p_props: Dict[str, Any] = {}   # own (unresolved) paragraph props
+            own_c_props: Dict[str, Any] = {}   # own (unresolved) character/run props
+            raw_papx_grpprl: str = ""          # hex of raw paragraph GRPPRL
+            raw_chpx_grpprl: str = ""          # hex of raw character GRPPRL
+
             if stk == 1:  # paragraph style: UPX.papx then UPX.chpx
                 if rem_off + 2 <= len(rem):
                     cbUpxPapx = struct.unpack_from("<H", rem, rem_off)[0]
@@ -408,45 +448,109 @@ class StshParser:
                     if rem_off % 2 != 0:
                         rem_off += 1
                     if len(papx_bytes) >= 2:
-                        p_props = decode_paragraph_formatting(papx_bytes[2:])
+                        grpprl_only = papx_bytes[2:]  # skip the embedded istd
+                        own_p_props = decode_paragraph_formatting(grpprl_only)
+                        raw_papx_grpprl = grpprl_only.hex()
                 if rem_off + 2 <= len(rem):
                     cbUpxChpx = struct.unpack_from("<H", rem, rem_off)[0]
                     rem_off += 2
                     chpx_bytes = rem[rem_off : rem_off + cbUpxChpx]
                     rem_off += cbUpxChpx
-                    c_props = decode_character_formatting(chpx_bytes)
-            elif stk == 2:  # character style: UPX.chpx
+                    own_c_props = decode_character_formatting(chpx_bytes)
+                    raw_chpx_grpprl = chpx_bytes.hex()
+            elif stk == 2:  # character style: UPX.chpx only
                 if rem_off + 2 <= len(rem):
                     cbUpxChpx = struct.unpack_from("<H", rem, rem_off)[0]
                     rem_off += 2
                     chpx_bytes = rem[rem_off : rem_off + cbUpxChpx]
                     rem_off += cbUpxChpx
-                    c_props = decode_character_formatting(chpx_bytes)
+                    own_c_props = decode_character_formatting(chpx_bytes)
+                    raw_chpx_grpprl = chpx_bytes.hex()
 
             style_entry: Dict[str, Any] = {
                 "id": name,
                 "name": name,
                 "type": style_type_str,
                 "istd": istd,
+                "istdBase": istdBase,
+                "rawStdfBase": raw_stdf_base,
             }
+            if aliases:
+                style_entry["aliases"] = aliases
             if istd == 0:
                 style_entry["default"] = True
                 style_entry["primaryStyle"] = True
-            if p_props:
-                style_entry["paragraph"] = p_props
-            if c_props:
-                style_entry["run"] = c_props
+
+            # Store own (unresolved) properties — these are what the writer must use
+            if own_p_props:
+                style_entry["ownParagraph"] = own_p_props
+            if own_c_props:
+                style_entry["ownRun"] = own_c_props
+
+            # Store raw UPX GRPPRL bytes for verbatim reconstruction
+            if raw_papx_grpprl:
+                style_entry["rawPapxGrpprl"] = raw_papx_grpprl
+            if raw_chpx_grpprl:
+                style_entry["rawChpxGrpprl"] = raw_chpx_grpprl
+
+            # Bootstrap paragraph/run with own values (inheritance pass will enrich)
+            if own_p_props:
+                style_entry["paragraph"] = dict(own_p_props)
+            if own_c_props:
+                style_entry["run"] = dict(own_c_props)
                 for k in ("bold", "italic", "size", "color", "fontIndex"):
-                    if k in c_props:
-                        style_entry[k] = c_props[k]
+                    if k in own_c_props:
+                        style_entry[k] = own_c_props[k]
 
             styles[name] = style_entry
+
+        # --- Inheritance resolution pass ---
+        # Builds 'paragraph'/'run' as the EFFECTIVE (fully resolved) chain.
+        # The original own props are preserved separately in 'ownParagraph'/'ownRun'.
+        istd_index: Dict[int, Dict[str, Any]] = {s["istd"]: s for s in styles.values()}
+
+        def _resolve_props(entry: Dict[str, Any], key: str, visited: set) -> Dict[str, Any]:
+            """Walk istdBase chain; return merged props (ancestors first, child overrides)."""
+            istd_val = entry.get("istd", 0xFFFF)
+            if istd_val in visited:
+                return {}
+            visited.add(istd_val)
+            base_istd = entry.get("istdBase", 0xFFFF)
+            if base_istd in (0xFFFF, 4095) or base_istd not in istd_index or base_istd == istd_val:
+                # Use the own props as the resolved chain root
+                own_key = "ownParagraph" if key == "paragraph" else "ownRun"
+                return dict(entry.get(own_key) or entry.get(key) or {})
+            parent_entry = istd_index[base_istd]
+            merged = _resolve_props(parent_entry, key, visited)
+            own_key = "ownParagraph" if key == "paragraph" else "ownRun"
+            merged.update(entry.get(own_key) or {})
+            return merged
+
+        for s in styles.values():
+            resolved_para = _resolve_props(s, "paragraph", set())
+            resolved_run  = _resolve_props(s, "run", set())
+            # Store effective (resolved) values — used for rendering/display
+            if resolved_para:
+                s["paragraph"] = resolved_para
+                s["effective"] = s.get("effective", {})
+                s["effective"]["paragraph"] = resolved_para
+            if resolved_run:
+                s["run"] = resolved_run
+                s.setdefault("effective", {})["run"] = resolved_run
+                for k in ("bold", "italic", "size", "color", "fontIndex"):
+                    if k in resolved_run:
+                        s[k] = resolved_run[k]
 
         return {"styles": styles}
 
     @classmethod
     def build(cls, styles_dict: Dict[str, Any]) -> Tuple[bytes, Dict[str, int]]:
-        """Build binary STSH table and return (stsh_bytes, style_name_to_istd_map)."""
+        """Build binary STSH table and return (stsh_bytes, style_name_to_istd_map).
+
+        Lossless path: prefers rawPapxGrpprl/rawChpxGrpprl when present.
+        Falls back to encoding ownParagraph/ownRun (own, unresolved props).
+        Correctly writes istdBase into STD w1 field to restore hierarchy.
+        """
         styles_map: Dict[str, int] = {}
         raw_styles = styles_dict.get("styles", styles_dict) if isinstance(styles_dict, dict) else {}
 
@@ -484,10 +588,20 @@ class StshParser:
         cstd = max(assigned_slots.keys()) + 1 if assigned_slots else 1
 
         stds_by_slot: Dict[int, bytes] = {}
+        builtin_names_rev = {
+            "Normal": 0,
+            "Heading 1": 1, "Heading 2": 2, "Heading 3": 3,
+            "Heading 4": 4, "Heading 5": 5, "Heading 6": 6,
+            "Heading 7": 7, "Heading 8": 8, "Heading 9": 9,
+            "Default Paragraph Font": 10,
+            "Table Normal": 11,
+            "No List": 12,
+        }
+        
         for slot, (name, item) in assigned_slots.items():
             st_type_str = item.get("type", "paragraph") if isinstance(item, dict) else "paragraph"
             stk = type_map.get(st_type_str, 1)
-            sti = slot if slot < 4094 else 4094
+            sti = builtin_names_rev.get(name, 4094)
             std_bytes = cls._build_single_std(sti, slot, stk, name, item)
             stds_by_slot[slot] = std_bytes
             styles_map[name] = slot
@@ -500,7 +614,7 @@ class StshParser:
             cstd,
             18,   # cbSTDBaseInFile (18 bytes standard for Word 97-2003)
             1,    # fStdStylenamesWritten
-            4094, # stiMaxWhenSaved
+            154,  # stiMaxWhenSaved (154 for Word 97, 275 for Word 2000)
             0,
             0,
             0,
@@ -528,13 +642,55 @@ class StshParser:
         name: str,
         item: Optional[Dict[str, Any]] = None,
     ) -> bytes:
-        """Build a single STD (Style Descriptor) record with UPX."""
+        """Build a single STD (Style Descriptor) record with UPX.
+
+        Lossless path:
+        1. If rawPapxGrpprl/rawChpxGrpprl present, use them verbatim.
+        2. Otherwise encode ownParagraph/ownRun (original, unresolved values).
+        3. istdBase is written into w1 bits [15:4] to restore hierarchy.
+        """
         w0 = sti & 0x0FFF
-        w1 = stk & 0x000F
-        # 18-byte standard Word 97-2003 StdfBase (9 unsigned 16-bit shorts)
-        base = struct.pack("<9H", w0, w1, istd, 0, 0, 0, 0, 0, 0)
-        # Pascal UTF-16LE string (xstz)
-        encoded_name = name.encode("utf-16le")
+
+        # Restore istdBase from stored field (default 0xFFFF = no parent)
+        istdBase_val = 0xFFFF
+        if item and isinstance(item, dict):
+            stored_base = item.get("istdBase")
+            if stored_base is not None:
+                try:
+                    istdBase_val = int(stored_base) & 0x0FFF
+                except (ValueError, TypeError):
+                    istdBase_val = 0xFFFF
+
+        # w1: bits [3:0] = stk, bits [15:4] = istdBase
+        w1 = (stk & 0x000F) | ((istdBase_val & 0x0FFF) << 4)
+
+        raw_stdf_base_hex = item.get("rawStdfBase", "") if item and isinstance(item, dict) else ""
+        if raw_stdf_base_hex:
+            try:
+                base = bytes.fromhex(raw_stdf_base_hex)
+                if len(base) < 18:
+                    base = base.ljust(18, b'\x00')
+                elif len(base) > 18:
+                    base = base[:18]
+                # We also need to rewrite w1 into the base because stk and istdBase might have changed in the AST!
+                # Wait, does the AST allow changing istdBase? The tests modify it? No, but let's be safe.
+                w0_orig, w1_orig = struct.unpack_from("<HH", base, 0)
+                # Apply new w1 (which has updated stk and istdBase)
+                base = struct.pack("<H", w0_orig) + struct.pack("<H", w1) + base[4:]
+            except Exception:
+                base = struct.pack("<9H", w0, w1, istd, 0, 0, 0, 0, 0, 0)
+        else:
+            # 18-byte standard Word 97-2003 StdfBase (9 unsigned 16-bit shorts)
+            base = struct.pack("<9H", w0, w1, istd, 0, 0, 0, 0, 0, 0)
+
+        # Pascal UTF-16LE string (xstz) — restore aliases if present
+        aliases = []
+        if item and isinstance(item, dict):
+            stored_aliases = item.get("aliases", [])
+            if isinstance(stored_aliases, list):
+                aliases = [str(a) for a in stored_aliases if a]
+        full_name = name + ("," + ",".join(aliases) if aliases else "")
+        encoded_name = full_name.encode("utf-16le")
         cch = len(encoded_name) // 2
         name_bytes = struct.pack("<H", cch) + encoded_name + b"\x00\x00"
         if len(name_bytes) % 2 != 0:
@@ -543,42 +699,71 @@ class StshParser:
         upx_bytes = bytearray()
         if item and isinstance(item, dict):
             if stk == 1:  # Paragraph style: UPX.papx then UPX.chpx
-                p_props = dict(item.get("paragraph", {}))
-                for k in ("align", "spacing", "indent", "keepWithNext", "keepLines"):
-                    if k in item and k not in p_props:
-                        p_props[k] = item[k]
-
-                c_props = dict(item.get("run", {}))
-                for k in ("bold", "italic", "underline", "size", "font", "fontIndex", "color"):
-                    if k in item and k not in c_props:
-                        c_props[k] = item[k]
-
-                if p_props or c_props:
+                # --- Paragraph UPX ---
+                raw_papx_hex = item.get("rawPapxGrpprl", "")
+                if raw_papx_hex:
+                    # Lossless path: use stored raw GRPPRL verbatim
+                    try:
+                        p_grpprl = bytes.fromhex(raw_papx_hex)
+                    except Exception:
+                        p_grpprl = b""
+                else:
+                    # Encoding path: prefer ownParagraph over effective paragraph
+                    p_props = dict(item.get("ownParagraph") or item.get("paragraph", {}))
+                    for k in ("align", "spacing", "indent", "keepWithNext", "keepLines",
+                              "pageBreakBefore", "numbering", "borders", "shading", "tabs",
+                              "outlineLevel", "unknownSprms"):
+                        if k in item and k not in p_props:
+                            p_props[k] = item[k]
                     p_grpprl = encode_paragraph_formatting(p_props)
-                    papx = struct.pack("<H", istd) + p_grpprl
-                    upx_bytes.extend(struct.pack("<H", len(papx)))
-                    upx_bytes.extend(papx)
-                    if len(papx) % 2 != 0:
-                        upx_bytes.append(0)
 
+                papx = struct.pack("<H", istd) + p_grpprl
+                upx_bytes.extend(struct.pack("<H", len(papx)))
+                upx_bytes.extend(papx)
+                if len(papx) % 2 != 0:
+                    upx_bytes.append(0)
+
+                # --- Character UPX ---
+                raw_chpx_hex = item.get("rawChpxGrpprl", "")
+                if raw_chpx_hex:
+                    try:
+                        c_grpprl = bytes.fromhex(raw_chpx_hex)
+                    except Exception:
+                        c_grpprl = b""
+                else:
+                    c_props = dict(item.get("ownRun") or item.get("run", {}))
+                    for k in ("bold", "italic", "underline", "size", "font", "fontIndex",
+                              "color", "highlight", "outline", "shadow", "smallCaps",
+                              "caps", "vanish", "unknownSprms"):
+                        if k in item and k not in c_props:
+                            c_props[k] = item[k]
                     c_grpprl = encode_character_formatting(c_props)
-                    upx_bytes.extend(struct.pack("<H", len(c_grpprl)))
-                    upx_bytes.extend(c_grpprl)
-                    if len(c_grpprl) % 2 != 0:
-                        upx_bytes.append(0)
 
-            elif stk == 2:  # Character style: UPX.chpx
-                c_props = dict(item.get("run", {}))
-                for k in ("bold", "italic", "underline", "size", "font", "fontIndex", "color"):
-                    if k in item and k not in c_props:
-                        c_props[k] = item[k]
+                upx_bytes.extend(struct.pack("<H", len(c_grpprl)))
+                upx_bytes.extend(c_grpprl)
+                if len(c_grpprl) % 2 != 0:
+                    upx_bytes.append(0)
 
-                if c_props:
+            elif stk == 2:  # Character style: UPX.chpx only
+                raw_chpx_hex = item.get("rawChpxGrpprl", "")
+                if raw_chpx_hex:
+                    try:
+                        c_grpprl = bytes.fromhex(raw_chpx_hex)
+                    except Exception:
+                        c_grpprl = b""
+                else:
+                    c_props = dict(item.get("ownRun") or item.get("run", {}))
+                    for k in ("bold", "italic", "underline", "size", "font", "fontIndex",
+                              "color", "highlight", "outline", "shadow", "smallCaps",
+                              "caps", "vanish", "unknownSprms"):
+                        if k in item and k not in c_props:
+                            c_props[k] = item[k]
                     c_grpprl = encode_character_formatting(c_props)
-                    upx_bytes.extend(struct.pack("<H", len(c_grpprl)))
-                    upx_bytes.extend(c_grpprl)
-                    if len(c_grpprl) % 2 != 0:
-                        upx_bytes.append(0)
+
+                upx_bytes.extend(struct.pack("<H", len(c_grpprl)))
+                upx_bytes.extend(c_grpprl)
+                if len(c_grpprl) % 2 != 0:
+                    upx_bytes.append(0)
 
         return base + name_bytes + bytes(upx_bytes)
 
@@ -588,54 +773,146 @@ class StshParser:
 # --------------------------------
 
 class ListParser:
-    """Parses and serializes Word 97-2003 list tables (PlfLst, PlfLfo)."""
+    """Parses and serializes Word 97-2003 list tables (PlfLst, PlfLfo).
+
+    Lossless strategy: stores rawLstf (hex) on each abstract_num entry and
+    reconstructs LVL level records from the parsed JSON fields on build.
+    """
+
+    # Number format code names (nfc values from [MS-DOC] 2.9.162)
+    _NFC_MAP = {
+        0: "decimal",
+        1: "upperRoman",
+        2: "lowerRoman",
+        3: "upperLetter",
+        4: "lowerLetter",
+        5: "ordinal",
+        23: "bullet",
+        255: "none",
+    }
+    _NFC_RMAP = {v: k for k, v in _NFC_MAP.items()}
 
     @classmethod
     def parse(cls, lst_bytes: bytes, lfo_bytes: bytes) -> Dict[str, Any]:
-        """Parse PlfLst and PlfLfo into unified JSON AST numbering structure."""
+        """Parse PlfLst and PlfLfo into unified JSON AST numbering structure.
+
+        LSTF is 28 bytes per list definition:
+          lsid       (int32)
+          tplc       (int32)
+          rgistdPara (9 x uint16 = 18 bytes)
+          flags      (uint8): bit0=fSimpleList, bit1=fAutoNum, ...
+          reserved   (uint8)
+        """
         abstract_nums: List[Dict[str, Any]] = []
         nums: List[Dict[str, Any]] = []
 
-        # Parse PlfLst
         if len(lst_bytes) >= 2:
             cLst = struct.unpack_from("<H", lst_bytes, 0)[0]
             offset = 2
-            # Read cLst list definitions
+
             for i in range(cLst):
                 if offset + 28 > len(lst_bytes):
                     break
-                lsid, tplc = struct.unpack_from("<ii", lst_bytes, offset)
-                offset += 28  # size of LSTF
+
+                lstf_bytes = lst_bytes[offset : offset + 28]
+                lsid, tplc = struct.unpack_from("<ii", lstf_bytes, 0)
+                rgistdPara = list(struct.unpack_from("<9H", lstf_bytes, 8))
+                flags_byte = lstf_bytes[26] if len(lstf_bytes) > 26 else 0
+                f_simple_list = bool(flags_byte & 0x01)
+                f_auto_num    = bool(flags_byte & 0x02)
+                offset += 28
+
+                num_levels = 1 if f_simple_list else 9
+
+                # Parse inline level data (LVLF, 28 bytes each, then grpprl+text)
+                levels: List[Dict[str, Any]] = []
+                for lvl_idx in range(num_levels):
+                    if offset + 28 > len(lst_bytes):
+                        break
+                    lvlf = lst_bytes[offset : offset + 28]
+                    start_at = struct.unpack_from("<i", lvlf, 0)[0]
+                    nfc       = lvlf[4] if len(lvlf) > 4 else 23
+                    lvl_jc    = lvlf[5] if len(lvlf) > 5 else 0
+                    following = lvlf[6] if len(lvlf) > 6 else 0
+                    legacy    = lvlf[7] if len(lvlf) > 7 else 0
+                    dxa_space = struct.unpack_from("<h", lvlf, 8)[0] if len(lvlf) > 9 else 360
+                    dxa_indent= struct.unpack_from("<h", lvlf, 10)[0] if len(lvlf) > 11 else 720
+                    cb_papx   = lvlf[16] if len(lvlf) > 16 else 0
+                    cb_chpx   = lvlf[17] if len(lvlf) > 17 else 0
+                    i_lvl_pic = struct.unpack_from("<H", lvlf, 18)[0] if len(lvlf) > 19 else 0
+                    offset += 28
+
+                    # PAPX grpprl
+                    papx_grpprl = b""
+                    if cb_papx > 0 and offset + cb_papx <= len(lst_bytes):
+                        papx_grpprl = lst_bytes[offset : offset + cb_papx]
+                        offset += cb_papx
+
+                    # CHPX grpprl
+                    chpx_grpprl = b""
+                    if cb_chpx > 0 and offset + cb_chpx <= len(lst_bytes):
+                        chpx_grpprl = lst_bytes[offset : offset + cb_chpx]
+                        offset += cb_chpx
+
+                    # Text pattern (xst): 2-byte cch + cch x UTF-16LE chars
+                    text_str = ""
+                    if offset + 2 <= len(lst_bytes):
+                        cch_txt = struct.unpack_from("<H", lst_bytes, offset)[0]
+                        offset += 2
+                        if cch_txt > 0 and offset + cch_txt * 2 <= len(lst_bytes):
+                            raw_txt = lst_bytes[offset : offset + cch_txt * 2]
+                            text_str = raw_txt.decode("utf-16le", errors="replace")
+                            offset += cch_txt * 2
+
+                    lvl_dict: Dict[str, Any] = {
+                        "level": lvl_idx,
+                        "start": start_at,
+                        "format": cls._NFC_MAP.get(nfc, str(nfc)),
+                        "jc": lvl_jc,
+                        "following": following,
+                        "dxaSpace": dxa_space,
+                        "dxaIndent": dxa_indent,
+                    }
+                    if text_str:
+                        lvl_dict["text"] = text_str
+                    if papx_grpprl:
+                        lvl_dict["papxRaw"] = papx_grpprl.hex()
+                    if chpx_grpprl:
+                        lvl_dict["chpxRaw"] = chpx_grpprl.hex()
+                    levels.append(lvl_dict)
 
                 abstract_nums.append({
                     "id": i + 1,
                     "lsid": lsid,
-                    "levels": [
-                        {
-                            "level": 0,
-                            "format": "bullet",
-                            "text": "\u2022",
-                            "start": 1,
-                        }
-                    ]
+                    "tplc": tplc,
+                    "rgistdPara": rgistdPara,
+                    "fSimpleList": f_simple_list,
+                    "fAutoNum": f_auto_num,
+                    "rawLstf": lstf_bytes.hex(),
+                    "levels": levels,
                 })
 
         lsid_to_abs_id = {a["lsid"]: a["id"] for a in abstract_nums if "lsid" in a}
 
-        # Parse PlfLfo (each LFO is 16 bytes)
+        # Parse PlfLfo — each LFO is 16 bytes
         if len(lfo_bytes) >= 4:
             cLfo = struct.unpack_from("<I", lfo_bytes, 0)[0]
+            lfo_offset = 4
             for i in range(cLfo):
-                offset = 4 + i * 16
-                if offset + 4 > len(lfo_bytes):
+                if lfo_offset + 16 > len(lfo_bytes):
                     break
-                lsid = struct.unpack_from("<i", lfo_bytes, offset)[0]
-                abs_id = lsid_to_abs_id.get(lsid, i + 1)
+                lsid   = struct.unpack_from("<i", lfo_bytes, lfo_offset)[0]
+                cp_first = struct.unpack_from("<i", lfo_bytes, lfo_offset + 4)[0]
+                clfolvl  = lfo_bytes[lfo_offset + 12] if lfo_offset + 12 < len(lfo_bytes) else 0
+                abs_id   = lsid_to_abs_id.get(lsid, i + 1)
                 nums.append({
                     "id": i + 1,
                     "abstractNumId": abs_id,
                     "lsid": lsid,
+                    "cpFirst": cp_first,
+                    "clfolvl": clfolvl,
                 })
+                lfo_offset += 16
 
         if not nums and abstract_nums:
             for idx, a in enumerate(abstract_nums, start=1):
@@ -649,7 +926,10 @@ class ListParser:
 
     @classmethod
     def build(cls, numbering_dict: Dict[str, Any]) -> Tuple[bytes, bytes]:
-        """Build PlfLst and PlfLfo bytes from AST numbering."""
+        """Build PlfLst and PlfLfo bytes from AST numbering.
+
+        Lossless path: reconstructs full LSTF + LVL records from stored fields.
+        """
         if not isinstance(numbering_dict, dict):
             return b"", b""
         nums = numbering_dict.get("num", [])
@@ -658,7 +938,6 @@ class ListParser:
         if not nums and not abstract_nums:
             return b"", b""
 
-        # 1. Build PlfLst from abstract_nums
         abs_items = list(abstract_nums) if abstract_nums else []
         if not abs_items and nums:
             for idx, n in enumerate(nums, start=1):
@@ -669,22 +948,68 @@ class ListParser:
 
         cLst = len(abs_items)
         lst_out = bytearray(struct.pack("<H", cLst))
+
         for idx, a in enumerate(abs_items, start=1):
-            lsid = a.get("lsid")
-            if lsid is None or lsid == 0:
-                lsid = idx * 1000 + 1
-            # LSTF (28 bytes)
-            lstf = struct.pack(
-                "<ii18sBB",
-                lsid,
-                lsid,
-                b"\x00" * 18,
-                1,  # fSimpleList
-                0,
-            )
+            lsid = int(a.get("lsid") or idx * 1000 + 1)
+            tplc = int(a.get("tplc") or 0)
+            rgistdPara = a.get("rgistdPara", [0xFFFF] * 9)
+            if not isinstance(rgistdPara, list) or len(rgistdPara) < 9:
+                rgistdPara = list(rgistdPara) + [0xFFFF] * (9 - len(rgistdPara))
+            f_simple = a.get("fSimpleList", True)
+            f_auto   = a.get("fAutoNum", False)
+            flags_byte = (1 if f_simple else 0) | (2 if f_auto else 0)
+
+            # Build LSTF (28 bytes)
+            rgistdPara_bytes = struct.pack("<9H", *[int(v) & 0xFFFF for v in rgistdPara[:9]])
+            lstf = struct.pack("<ii", lsid, tplc) + rgistdPara_bytes + bytes([flags_byte, 0])
             lst_out.extend(lstf)
 
-        # 2. Build PlfLfo from nums
+            # Build LVL records
+            levels = a.get("levels", [])
+            num_levels = 1 if f_simple else 9
+
+            for lvl_idx in range(num_levels):
+                if lvl_idx < len(levels):
+                    lvl = levels[lvl_idx]
+                else:
+                    lvl = {"level": lvl_idx, "start": 1, "format": "bullet", "text": "\u2022"}
+
+                start_at  = int(lvl.get("start", 1))
+                fmt_str   = lvl.get("format", "bullet")
+                nfc       = cls._NFC_RMAP.get(fmt_str, 23) if isinstance(fmt_str, str) else int(fmt_str)
+                lvl_jc    = int(lvl.get("jc", 0))
+                following = int(lvl.get("following", 0))
+                dxa_space = int(lvl.get("dxaSpace", 360))
+                dxa_indent= int(lvl.get("dxaIndent", 720))
+
+                papx_grpprl = bytes.fromhex(lvl.get("papxRaw", "")) if lvl.get("papxRaw") else b""
+                chpx_grpprl = bytes.fromhex(lvl.get("chpxRaw", "")) if lvl.get("chpxRaw") else b""
+                text_str    = lvl.get("text", "")
+
+                # LVLF (28 bytes)
+                lvlf = struct.pack(
+                    "<iBBBBhh10xHH",
+                    start_at,
+                    nfc,
+                    lvl_jc,
+                    following,
+                    0,            # legacy
+                    dxa_space,
+                    dxa_indent,
+                    len(papx_grpprl),
+                    len(chpx_grpprl),
+                )
+                lst_out.extend(lvlf)
+                lst_out.extend(papx_grpprl)
+                lst_out.extend(chpx_grpprl)
+
+                # xst text pattern
+                text_encoded = text_str.encode("utf-16le") if text_str else b""
+                cch_txt = len(text_encoded) // 2
+                lst_out.extend(struct.pack("<H", cch_txt))
+                lst_out.extend(text_encoded)
+
+        # Build PlfLfo
         num_items = list(nums) if nums else []
         if not num_items and abs_items:
             for idx, a in enumerate(abs_items, start=1):
@@ -697,11 +1022,11 @@ class ListParser:
         cLfo = len(num_items)
         lfo_out = bytearray(struct.pack("<I", cLfo))
         for idx, item in enumerate(num_items, start=1):
-            lsid = item.get("lsid")
-            if lsid is None or lsid == 0:
-                lsid = idx * 1000 + 1
-            # LFO (16 bytes)
-            lfo = struct.pack("<iiii", lsid, 0, 0, 0)
+            lsid    = int(item.get("lsid") or idx * 1000 + 1)
+            cp_first = int(item.get("cpFirst", 0))
+            clfolvl  = int(item.get("clfolvl", 0))
+            # LFO (16 bytes): lsid(4) + cpFirst(4) + reserved(4) + clfolvl(1) + reserved(3)
+            lfo = struct.pack("<iiiBxxx", lsid, cp_first, 0, clfolvl)
             lfo_out.extend(lfo)
 
         return bytes(lst_out), bytes(lfo_out)

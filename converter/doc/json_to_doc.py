@@ -3,7 +3,8 @@
 from pathlib import Path
 
 from formats.doc.writer import DocWriter
-from utils.json import load_json
+from parser.doc.json_to_binary import JsonToBinaryParser
+from utils.common.json import load_json
 
 
 def json_to_doc(
@@ -16,9 +17,10 @@ def json_to_doc(
     output_path = Path(output_path)
 
     data = load_json(json_path)
+    parser = JsonToBinaryParser()
 
     with DocWriter(output_path) as writer:
-        writer.build_document(data)
+        parser.build_document(data, writer)
 
         print(
             f"Successfully converted "

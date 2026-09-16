@@ -39,17 +39,21 @@ class DocDocumentHandler(DocBaseHandler):
             return source
 
         from formats.doc.reader import DocReader
+        from parser.doc.binary_to_json import BinaryToJsonParser
 
         with DocReader(source) as reader:
-            return reader.parse_document()
+            parser = BinaryToJsonParser(reader)
+            return parser.parse_document()
 
     def to_binary(self, data: dict[str, Any], **kwargs) -> bytes:
         """Serialize document AST to complete binary Word .doc bytes."""
         from formats.doc.writer import DocWriter
+        from parser.doc.json_to_binary import JsonToBinaryParser
 
         buf = io.BytesIO()
         writer = DocWriter(buf)
-        writer.build_document(data)
+        parser = JsonToBinaryParser()
+        parser.build_document(data, writer)
         return writer._cfb.build()
 
 

@@ -332,7 +332,8 @@ class CFBReader:
         self._entry_map: Dict[str, DirectoryEntry] = {}
         for entry in self.entries:
             if entry.entry_type in (STGTY_STREAM, STGTY_STORAGE, STGTY_ROOT) and entry.name:
-                self._entry_map[entry.name] = entry
+                path = getattr(entry, 'full_path', entry.name)
+                self._entry_map[path] = entry
 
     def _build_tree(self, parent: DirectoryEntry) -> None:
         """Traverse child binary tree and attach child entries."""
@@ -344,6 +345,13 @@ class CFBReader:
                 return
             node = self.entries[node_id]
             node.parent = parent
+            
+            # Construct full path
+            if hasattr(parent, 'full_path') and parent.full_path != "Root Entry":
+                node.full_path = f"{parent.full_path}/{node.name}"
+            else:
+                node.full_path = node.name
+
             parent.children.append(node)
             visit(node.left_sibling)
             visit(node.right_sibling)
@@ -376,7 +384,7 @@ class CFBReader:
     def list_streams(self) -> List[str]:
         """List all stream names in the compound file."""
         return [
-            e.name
+            getattr(e, 'full_path', e.name)
             for e in self.entries
             if e.entry_type == STGTY_STREAM and e.name
         ]
@@ -488,8 +496,6 @@ class CFBWriter:
         minifat_bytes = struct.pack(f"<{len(minifat_table)}I", *minifat_table) if minifat_table else b""
 
         # 2. Prepare Directory Entries
-        # Index 0: Root Entry
-        # Indices 1..N: Stream entries
         entries: List[DirectoryEntry] = []
         now = datetime.now(timezone.utc)
 
@@ -503,42 +509,79 @@ class CFBWriter:
             size=len(ministream_bytes),
         )
         entries.append(root_entry)
+        
+        # Build tree structure from paths
+        class Node:
+            def __init__(self, name: str, entry_type: int):
+                self.name = name
+                self.entry_type = entry_type
+                self.children: Dict[str, Node] = {}
+                self.data_key: Optional[str] = None
+                self.entry_ref: Optional[DirectoryEntry] = None
 
+        root_node = Node("Root Entry", STGTY_ROOT)
+        
         stream_names = list(self._streams.keys())
-        for idx, name in enumerate(stream_names, start=1):
-            data = self._streams[name]
-            is_mini = name in mini_streams
-            start_sect, size = (
-                mini_allocations[name] if is_mini else (ENDOFCHAIN if len(data) == 0 else 0, len(data))
-            )
-            entry = DirectoryEntry(
-                index=idx,
-                name=name,
-                entry_type=STGTY_STREAM,
-                color=COLOR_BLACK,
-                created=now,
-                modified=now,
-                start_sector=start_sect,
-                size=size,
-            )
-            entries.append(entry)
 
-        # Build balanced binary tree (Red-Black / BST) for children of Root Entry
-        def build_child_tree(sub_entries: List[DirectoryEntry]) -> int:
-            if not sub_entries:
+        for name in stream_names:
+            parts = name.split("/")
+            curr = root_node
+            for i, part in enumerate(parts):
+                is_last = (i == len(parts) - 1)
+                if part not in curr.children:
+                    curr.children[part] = Node(part, STGTY_STREAM if is_last else STGTY_STORAGE)
+                curr = curr.children[part]
+            curr.data_key = name
+
+        # Traverse tree and create entries
+        def create_entries(node: Node, parent_entry: Optional[DirectoryEntry]):
+            for child_name, child_node in node.children.items():
+                is_stream = child_node.entry_type == STGTY_STREAM
+                idx = len(entries)
+                if is_stream:
+                    data = self._streams[child_node.data_key]
+                    is_mini = child_node.data_key in mini_streams
+                    start_sect, size = (
+                        mini_allocations[child_node.data_key] if is_mini else (ENDOFCHAIN if len(data) == 0 else 0, len(data))
+                    )
+                else:
+                    start_sect, size = ENDOFCHAIN, 0
+                
+                entry = DirectoryEntry(
+                    index=idx,
+                    name=child_name,
+                    entry_type=child_node.entry_type,
+                    color=COLOR_BLACK,
+                    created=now,
+                    modified=now,
+                    start_sector=start_sect,
+                    size=size,
+                )
+                entry.full_path = child_node.data_key
+                entries.append(entry)
+                child_node.entry_ref = entry
+                create_entries(child_node, entry)
+
+        create_entries(root_node, root_entry)
+
+        # Build balanced binary tree (Red-Black / BST) for children
+        def build_child_tree(sub_nodes: List[Node]) -> int:
+            if not sub_nodes:
                 return NOSTREAM
-            mid = len(sub_entries) // 2
-            curr = sub_entries[mid]
-            curr.left_sibling = build_child_tree(sub_entries[:mid])
-            curr.right_sibling = build_child_tree(sub_entries[mid + 1 :])
-            return curr.index
+            mid = len(sub_nodes) // 2
+            curr = sub_nodes[mid]
+            
+            curr.entry_ref.left_sibling = build_child_tree(sub_nodes[:mid])
+            curr.entry_ref.right_sibling = build_child_tree(sub_nodes[mid + 1 :])
+            
+            if curr.children:
+                sorted_children = sorted(list(curr.children.values()), key=lambda n: (len(n.name), n.name.upper()))
+                curr.entry_ref.child = build_child_tree(sorted_children)
+                
+            return curr.entry_ref.index
 
-        # Sort children by name length and UTF-16LE uppercase comparison according to CFB spec
-        def cfb_key(e: DirectoryEntry):
-            return (len(e.name), e.name.upper())
-
-        child_entries = sorted(entries[1:], key=cfb_key)
-        root_entry.child = build_child_tree(child_entries)
+        sorted_root_children = sorted(list(root_node.children.values()), key=lambda n: (len(n.name), n.name.upper()))
+        root_entry.child = build_child_tree(sorted_root_children)
 
         # Directory sectors: 4 entries (128 bytes each) per 512-byte sector
         entries_per_sector = sector_size // 128
@@ -576,8 +619,8 @@ class CFBWriter:
 
         # Assign regular stream start sectors to Directory entries
         for entry in entries:
-            if entry.entry_type == STGTY_STREAM and entry.name in regular_allocations:
-                entry.start_sector = regular_allocations[entry.name][0]
+            if entry.entry_type == STGTY_STREAM and hasattr(entry, 'full_path') and entry.full_path in regular_allocations:
+                entry.start_sector = regular_allocations[entry.full_path][0]
 
         # MiniFAT sectors
         first_minifat_sector = ENDOFCHAIN

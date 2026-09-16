@@ -5,7 +5,7 @@
 from pathlib import Path
 from typing import Any
 import xml.etree.ElementTree as ET
-from utils.json import load_json
+from utils.common.json import load_json
 
 
 # --------------------------------

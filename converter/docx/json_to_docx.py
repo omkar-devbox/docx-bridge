@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Any
 
 from formats.docx.writer import DocxWriter
-from parser.json_to_xml import JsonToXmlParser
-from utils.json import load_json
+from parser.docx.json_to_xml import JsonToXmlParser
+from utils.common.json import load_json
 from .numbering import ensure_numbering
 from .packaging import (
     build_content_types_xml,

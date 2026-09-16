@@ -5,7 +5,7 @@ from typing import Any
 
 from formats.docx.reader import DocxReader
 from formats.docx.writer import DocxWriter
-from parser.xml_to_json import XmlToJsonParser
+from parser.docx.xml_to_json import XmlToJsonParser
 
 
 def build_root_relationships(has_metadata: bool = True) -> str:

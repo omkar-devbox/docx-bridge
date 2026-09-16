@@ -436,25 +436,25 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "COURSE",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "COURSE"
+                  }
                 },
                 {
                   "width": {
@@ -476,25 +476,25 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "INSTITUTE/COLLEGE",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "INSTITUTE/COLLEGE"
+                  }
                 },
                 {
                   "width": {
@@ -516,25 +516,25 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 220
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "BOARD/UNIVERSITY",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 220
-                  },
-                  "text": "BOARD/UNIVERSITY"
+                  }
                 },
                 {
                   "width": {
@@ -556,25 +556,25 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 240
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "SCORE",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 240
-                  },
-                  "text": "SCORE"
+                  }
                 },
                 {
                   "width": {
@@ -590,25 +590,25 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 140
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "YEAR",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 140
-                  },
-                  "text": "YEAR"
+                  }
                 }
               ]
             },
@@ -779,24 +779,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "CLASS X",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "CLASS X"
+                  }
                 },
                 {
                   "width": {
@@ -812,24 +812,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "THE ADITYA BIRLA PUBLIC SCHOOL, KOVAYA",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "THE ADITYA BIRLA PUBLIC SCHOOL, KOVAYA"
+                  }
                 },
                 {
                   "width": {
@@ -845,24 +845,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "CBSE",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "CBSE"
+                  }
                 },
                 {
                   "width": {
@@ -878,24 +878,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "9.6 CGPA",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "9.6 CGPA"
+                  }
                 },
                 {
                   "width": {
@@ -903,24 +903,24 @@
                     "type": "dxa"
                   },
                   "vAlign": "bottom",
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 140
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "2017",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 140
-                  },
-                  "text": "2017"
+                  }
                 }
               ]
             },
@@ -1091,24 +1091,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "CLASS XII in SCIENCE",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "CLASS XII in SCIENCE"
+                  }
                 },
                 {
                   "width": {
@@ -1124,24 +1124,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "DELHI PUBLIC SCHOOL, BHILAI",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "DELHI PUBLIC SCHOOL, BHILAI"
+                  }
                 },
                 {
                   "width": {
@@ -1157,24 +1157,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "CBSE",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "CBSE"
+                  }
                 },
                 {
                   "width": {
@@ -1190,24 +1190,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "88.6 %",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "88.6 %"
+                  }
                 },
                 {
                   "width": {
@@ -1215,24 +1215,24 @@
                     "type": "dxa"
                   },
                   "vAlign": "bottom",
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 140
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "2019",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 140
-                  },
-                  "text": "2019"
+                  }
                 }
               ]
             },
@@ -1403,24 +1403,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "B. Tech - Mechanical",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "B. Tech - Mechanical"
+                  }
                 },
                 {
                   "width": {
@@ -1436,24 +1436,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "SRM Institute of Science and Technology - Kattankulathur Campus",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "SRM Institute of Science and Technology - Kattankulathur Campus"
+                  }
                 },
                 {
                   "width": {
@@ -1488,24 +1488,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "9.38 CGPA",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "9.38 CGPA"
+                  }
                 },
                 {
                   "width": {
@@ -1513,24 +1513,24 @@
                     "type": "dxa"
                   },
                   "vAlign": "bottom",
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 140
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "2023",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 140
-                  },
-                  "text": "2023"
+                  }
                 }
               ]
             },
@@ -1772,26 +1772,26 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
-                  "color": "1B2432",
                   "bold": true,
-                  "font": "Arial",
+                  "color": "1B2432",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Technical Proficiency",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Technical Proficiency"
+                  }
                 },
                 {
                   "width": {
@@ -1800,24 +1800,24 @@
                   },
                   "colSpan": 4,
                   "vAlign": "bottom",
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Vector CANape, Friwo Enable tool, INCA, Creo Parametric, ANSYS Workbench, SolidWorks, AutoCAD",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "Vector CANape, Friwo Enable tool, INCA, Creo Parametric, ANSYS Workbench, SolidWorks, AutoCAD"
+                  }
                 },
                 {
                   "width": {
@@ -2097,25 +2097,25 @@
                   },
                   "colSpan": 2,
                   "vAlign": "bottom",
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "WORK EXPERIENCE",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "WORK EXPERIENCE"
+                  }
                 },
                 {
                   "width": {
@@ -2299,24 +2299,24 @@
                   },
                   "colSpan": 2,
                   "vAlign": "bottom",
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 340
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "July 2025 – present",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 340
-                  },
-                  "text": "July 2025 – present"
+                  }
                 }
               ]
             },
@@ -4506,22 +4506,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "July 2022 – May 2023",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "July 2022 – May 2023"
+                  }
                 },
                 {
                   "width": {
@@ -4556,24 +4556,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Team Leader",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Team Leader"
+                  }
                 },
                 {
                   "width": {
@@ -4993,25 +4993,25 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Certifications",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Certifications"
+                  }
                 },
                 {
                   "width": {
@@ -5164,24 +5164,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Understanding Core tools PFMEA I OMNEX",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Understanding Core tools PFMEA I OMNEX"
+                  }
                 },
                 {
                   "width": {
@@ -5208,22 +5208,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "February 2026",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "February 2026"
+                  }
                 },
                 {
                   "width": {
@@ -5309,22 +5309,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "August 2024",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "August 2024"
+                  }
                 },
                 {
                   "width": {
@@ -5360,24 +5360,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Engine assembly and analysis l Yamaha Motors Research and development India",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Engine assembly and analysis l Yamaha Motors Research and development India"
+                  }
                 },
                 {
                   "width": {
@@ -5393,22 +5393,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "August 2024",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "August 2024"
+                  }
                 },
                 {
                   "width": {
@@ -5444,24 +5444,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Japanese Language course – Basic Conversation level I ABK – AOTS DOSOKAI",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Japanese Language course – Basic Conversation level I ABK – AOTS DOSOKAI"
+                  }
                 },
                 {
                   "width": {
@@ -5477,22 +5477,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "December 2023",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "December 2023"
+                  }
                 },
                 {
                   "width": {
@@ -5691,25 +5691,25 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "AWARDS & RECOGNISITIONS",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "AWARDS & RECOGNISITIONS"
+                  }
                 },
                 {
                   "width": {
@@ -5862,24 +5862,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Runner Up in Optimal Hybrid l SAE International",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Runner Up in Optimal Hybrid l SAE International"
+                  }
                 },
                 {
                   "width": {
@@ -5906,22 +5906,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "June 2021",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "June 2021"
+                  }
                 },
                 {
                   "width": {
@@ -5956,24 +5956,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Third Position in Formula Hybrid l SAE International",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Third Position in Formula Hybrid l SAE International"
+                  }
                 },
                 {
                   "width": {
@@ -6000,22 +6000,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "June 2021",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "June 2021"
+                  }
                 },
                 {
                   "width": {
@@ -6050,24 +6050,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Runner Up in Formula Hybrid 2020 l SAE International",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Runner Up in Formula Hybrid 2020 l SAE International"
+                  }
                 },
                 {
                   "width": {
@@ -6094,22 +6094,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "May 2020",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "May 2020"
+                  }
                 },
                 {
                   "width": {
@@ -6308,25 +6308,25 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "COMPETITIONS",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "COMPETITIONS"
+                  }
                 },
                 {
                   "width": {
@@ -6479,26 +6479,26 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
-                  "color": "1B2432",
                   "bold": true,
-                  "font": "Arial",
+                  "color": "1B2432",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Formula Hybrid",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Formula Hybrid"
+                  }
                 },
                 {
                   "width": {
@@ -6525,22 +6525,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "April 2021",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "April 2021"
+                  }
                 },
                 {
                   "width": {
@@ -6651,26 +6651,26 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
-                  "color": "1B2432",
                   "bold": true,
-                  "font": "Arial",
+                  "color": "1B2432",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Formula Hybrid",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Formula Hybrid"
+                  }
                 },
                 {
                   "width": {
@@ -6697,22 +6697,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "March 2020",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "March 2020"
+                  }
                 },
                 {
                   "width": {
@@ -7013,25 +7013,25 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "SCHOLARSHIPS",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "SCHOLARSHIPS"
+                  }
                 },
                 {
                   "width": {
@@ -7184,24 +7184,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Performance Based Scholarship 2021-22",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Performance Based Scholarship 2021-22"
+                  }
                 },
                 {
                   "width": {
@@ -7228,22 +7228,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "January 2023",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "January 2023"
+                  }
                 },
                 {
                   "width": {
@@ -7278,24 +7278,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Performance Based Scholarship 2020-21",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Performance Based Scholarship 2020-21"
+                  }
                 },
                 {
                   "width": {
@@ -7322,22 +7322,22 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "January 2022",
                   "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "text": "January 2022"
+                  }
                 },
                 {
                   "width": {
@@ -7372,24 +7372,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Performance Based Scholarship 2019-20",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Performance Based Scholarship 2019-20"
+                  }
                 },
                 {
                   "width": {
@@ -7416,6 +7416,7 @@
                       "color": "auto"
                     }
                   },
+                  "align": "right",
                   "runs": [
                     {
                       "text": "January ",
@@ -7444,7 +7445,6 @@
                       }
                     }
                   ],
-                  "align": "right",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
@@ -7647,25 +7647,25 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "EXTRA CURRICULAR ACTIVITIES",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "EXTRA CURRICULAR ACTIVITIES"
+                  }
                 },
                 {
                   "width": {
@@ -7818,24 +7818,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Badminton",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Badminton"
+                  }
                 },
                 {
                   "width": {
@@ -7900,24 +7900,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Swimming",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Swimming"
+                  }
                 },
                 {
                   "width": {
@@ -7982,24 +7982,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Table Tennis",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Table Tennis"
+                  }
                 },
                 {
                   "width": {
@@ -8228,25 +8228,25 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "bold": true,
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "PERSONAL DETAILS",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "boldCs": true,
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "PERSONAL DETAILS"
+                  }
                 },
                 {
                   "width": {
@@ -8405,24 +8405,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Date of Birth: 18 November 2001",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Date of Birth: 18 November 2001"
+                  }
                 },
                 {
                   "width": {
@@ -8430,24 +8430,24 @@
                     "type": "dxa"
                   },
                   "vAlign": "bottom",
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Father’s Name: Upendra Jhunjhunwala",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "Father’s Name: Upendra Jhunjhunwala"
+                  }
                 },
                 {
                   "width": {
@@ -8601,24 +8601,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Permanent address:",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Permanent address:"
+                  }
                 },
                 {
                   "width": {
@@ -8732,24 +8732,24 @@
                   },
                   "rowSpan": "restart",
                   "vAlign": "bottom",
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Languages known:",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "Languages known:"
+                  }
                 },
                 {
                   "width": {
@@ -8810,24 +8810,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Vadodara,",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Vadodara,"
+                  }
                 },
                 {
                   "width": {
@@ -8975,24 +8975,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Vadodara, Gujarat,",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "Vadodara, Gujarat,"
+                  }
                 },
                 {
                   "width": {
@@ -9009,24 +9009,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 80
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "Hindi, English, Gujarati, Japanese (basic conversation)",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 80
-                  },
-                  "text": "Hindi, English, Gujarati, Japanese (basic conversation)"
+                  }
                 },
                 {
                   "width": {
@@ -9142,24 +9142,24 @@
                       "color": "auto"
                     }
                   },
-                  "size": 17,
                   "color": "1B2432",
-                  "font": "Arial",
+                  "indent": {
+                    "left": 100
+                  },
+                  "fontSizeCs": 17,
+                  "size": 17,
+                  "text": "PIN - 390021",
                   "markProperties": {
                     "fontSize": 20,
                     "fontSizeCs": 20
                   },
-                  "fontSizeCs": 17,
+                  "font": "Arial",
                   "fonts": {
                     "ascii": "Arial",
                     "eastAsia": "Arial",
                     "hAnsi": "Arial",
                     "cs": "Arial"
-                  },
-                  "indent": {
-                    "left": 100
-                  },
-                  "text": "PIN - 390021"
+                  }
                 },
                 {
                   "width": {

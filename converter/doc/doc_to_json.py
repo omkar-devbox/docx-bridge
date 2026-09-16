@@ -3,7 +3,8 @@
 from pathlib import Path
 
 from formats.doc.reader import DocReader
-from utils.json import dump_json
+from parser.doc.binary_to_json import BinaryToJsonParser
+from utils.common.json import dump_json
 
 
 def doc_to_json(
@@ -16,7 +17,8 @@ def doc_to_json(
     output_path = Path(output_path)
 
     with DocReader(doc_path) as reader:
-        data = reader.parse_document()
+        parser = BinaryToJsonParser(reader)
+        data = parser.parse_document()
         dump_json(data, output_path)
 
         print(

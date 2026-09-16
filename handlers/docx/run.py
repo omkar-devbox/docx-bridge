@@ -1630,7 +1630,7 @@ class RunHandler(BaseHandler):
 
             if "xml" in shape_data:
 
-                from utils.xml import parse_xml_string
+                from utils.docx.xml import parse_xml_string
 
                 r.append(
                     parse_xml_string(

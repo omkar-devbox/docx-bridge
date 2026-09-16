@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Any
 
 from formats.docx.reader import DocxReader
-from parser.xml_to_json import XmlToJsonParser
-from utils.json import dump_json
+from parser.docx.xml_to_json import XmlToJsonParser
+from utils.common.json import dump_json
 
 
 def docx_to_json(

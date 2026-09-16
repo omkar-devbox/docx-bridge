@@ -1,5 +1,5 @@
-from .xml_to_json import XmlToJsonParser
-from .json_to_xml import JsonToXmlParser
+from .docx.xml_to_json import XmlToJsonParser
+from .docx.json_to_xml import JsonToXmlParser
 
 
 # -------------------------------------------------
