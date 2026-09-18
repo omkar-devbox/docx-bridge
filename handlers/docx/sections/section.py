@@ -810,3 +810,8 @@ class SectionsHandler(BaseHandler):
         )
 
         return sect_pr
+
+
+SectionHandler = SectionsHandler
+
+__all__ = ["SectionsHandler", "SectionHandler"]

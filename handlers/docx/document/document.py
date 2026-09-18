@@ -11,8 +11,8 @@ from config import (
     DEFAULT_ORIENTATION,
 )
 from handlers.docx.base import BaseHandler, qn
-from handlers.docx.paragraph import ParagraphHandler
-from handlers.docx.table import TableHandler
+from handlers.docx.text import ParagraphHandler
+from handlers.docx.tables import TableHandler
 from handlers.docx.sections import SectionsHandler
 from handlers.docx.media import MediaHandler
 

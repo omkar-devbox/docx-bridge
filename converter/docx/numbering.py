@@ -1,7 +1,7 @@
 """Numbering and list item detection and provisioning helpers for DOCX packages."""
 
 from typing import Any
-from handlers.docx.numbering import NumberingHandler
+from handlers.docx.lists import NumberingHandler
 
 
 def extract_all_items(

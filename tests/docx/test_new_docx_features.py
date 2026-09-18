@@ -5,14 +5,12 @@ import xml.etree.ElementTree as ET
 
 from handlers.docx import DocxHandlerRegistry
 from handlers.docx.base import qn
-from handlers.docx.header_footer import HeaderFooterHandler
-from handlers.docx.properties import PropertiesHandler
-from handlers.docx.notes import NotesHandler
-from handlers.docx.comments import CommentsHandler
+from handlers.docx.sections import HeaderFooterHandler
+from handlers.docx.document import PropertiesHandler
+from handlers.docx.annotations import NotesHandler, CommentsHandler
 from handlers.docx.settings import SettingsHandler
-from handlers.docx.paragraph import ParagraphHandler
-from handlers.docx.run import RunHandler
-from handlers.docx.numbering import NumberingHandler
+from handlers.docx.text import ParagraphHandler, RunHandler
+from handlers.docx.lists import NumberingHandler
 from parser.docx.xml_to_json import XmlToJsonParser
 from parser.docx.json_to_xml import JsonToXmlParser
 

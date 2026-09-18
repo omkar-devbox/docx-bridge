@@ -1,7 +1,23 @@
-"""Common handlers, units, color conversions, and shared utilities."""
+"""Common base classes, context, registry, resolver, helpers, and errors."""
 
 from handlers.common.base import CommonBaseHandler
-from handlers.common.units import (
+from handlers.common.context import HandlerContext
+from handlers.common.registry import BaseHandlerRegistry
+from handlers.common.resolver import HandlerResolver
+from handlers.common.errors import (
+    HandlerError,
+    HandlerNotFoundError,
+    RegistrationError,
+    ResolutionError,
+    ConversionError,
+    ValidationError,
+)
+from handlers.common.helpers import (
+    to_number,
+    to_bool,
+    clean_dict,
+    normalize_alignment,
+    ALIGNMENT_MAP,
     DXA_PER_INCH,
     DXA_PER_CM,
     DXA_PER_PT,
@@ -27,27 +43,29 @@ from handlers.common.units import (
     pt_to_half_points,
     eighth_points_to_pt,
     pt_to_eighth_points,
-)
-from handlers.common.color import (
     bgr_to_hex,
     hex_to_bgr,
     hex_to_rgb,
     rgb_to_hex,
     normalize_hex_color,
 )
-from handlers.common.helpers import (
-    to_number,
-    to_bool,
-    clean_dict,
-    normalize_alignment,
-    ALIGNMENT_MAP,
-)
-from handlers.common.registry import BaseHandlerRegistry
 
 __all__ = [
     "CommonBaseHandler",
+    "HandlerContext",
     "BaseHandlerRegistry",
-    # Units
+    "HandlerResolver",
+    "HandlerError",
+    "HandlerNotFoundError",
+    "RegistrationError",
+    "ResolutionError",
+    "ConversionError",
+    "ValidationError",
+    "to_number",
+    "to_bool",
+    "clean_dict",
+    "normalize_alignment",
+    "ALIGNMENT_MAP",
     "DXA_PER_INCH",
     "DXA_PER_CM",
     "DXA_PER_PT",
@@ -73,16 +91,9 @@ __all__ = [
     "pt_to_half_points",
     "eighth_points_to_pt",
     "pt_to_eighth_points",
-    # Colors
     "bgr_to_hex",
     "hex_to_bgr",
     "hex_to_rgb",
     "rgb_to_hex",
     "normalize_hex_color",
-    # Helpers
-    "to_number",
-    "to_bool",
-    "clean_dict",
-    "normalize_alignment",
-    "ALIGNMENT_MAP",
 ]

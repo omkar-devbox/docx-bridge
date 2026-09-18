@@ -20,8 +20,7 @@ class StylesHandler(BaseHandler):
         simple: bool = False,
     ) -> dict[str, Any]:
 
-        from handlers.docx.run import RunHandler
-        from handlers.docx.paragraph import ParagraphHandler
+        from handlers.docx.text import RunHandler, ParagraphHandler
 
         run_handler = RunHandler()
         paragraph_handler = ParagraphHandler()
@@ -641,8 +640,7 @@ class StylesHandler(BaseHandler):
         data: dict[str, Any],
     ) -> ET.Element:
 
-        from handlers.docx.run import RunHandler
-        from handlers.docx.paragraph import ParagraphHandler
+        from handlers.docx.text import RunHandler, ParagraphHandler
 
         run_handler = RunHandler()
         paragraph_handler = ParagraphHandler()

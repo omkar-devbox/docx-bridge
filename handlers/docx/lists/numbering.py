@@ -2,7 +2,7 @@ from typing import Any
 import xml.etree.ElementTree as ET
 
 from handlers.docx.base import BaseHandler, qn, local_name
-from handlers.docx.run import RunHandler
+from handlers.docx.text import RunHandler
 
 
 # --------------------------------

@@ -32,7 +32,7 @@ PAGE_SIZES_FILE = _CONFIG_DIR / "page-sizes.json"  # Page size definitions
 # --------------------------------
 
 NAMESPACES_DATA: dict[str, dict[str, str]] = load_json(NAMESPACES_FILE)  # Loaded namespaces
-MASTER_TAGS_DATA: dict[str, dict[str, str]] = load_json(MASTER_TAGS_FILE)  # Loaded master tags
+MASTER_TAGS_DATA: dict[str, Any] = load_json(MASTER_TAGS_FILE)  # Loaded master tags
 RELATIONSHIPS_DATA: dict[str, Any] = load_json(RELATIONSHIPS_FILE)  # Loaded relationships
 CONTENT_TYPES_DATA: dict[str, Any] = load_json(CONTENT_TYPES_FILE)  # Loaded content types
 DOCX_CONFIG_DATA: dict[str, Any] = load_json(DOCX_CONFIG_FILE)  # Loaded DOCX configuration
@@ -61,8 +61,133 @@ def _flatten_namespaces(
 # Master Tag Helpers
 # --------------------------------
 
+_KNOWN_TAG_CATEGORIES: dict[str, set[str]] = {
+    "core": {
+        "w:document", "w:body", "Relationships", "Relationship",
+        "Types", "Default", "Override", "r:id", "r:embed", "r:link",
+    },
+    "content": {
+        "w:p", "w:r", "w:t", "w:br", "w:tab", "w:ptab", "w:cr",
+        "w:sym", "w:noBreakHyphen", "w:softHyphen",
+    },
+    "style": {
+        "w:pPr", "w:rPr", "w:pStyle", "w:rStyle", "w:b", "w:bCs",
+        "w:i", "w:iCs", "w:u", "w:strike", "w:dstrike", "w:caps",
+        "w:smallCaps", "w:color", "w:highlight", "w:shd", "w:sz",
+        "w:szCs", "w:rFonts", "w:vertAlign", "w:position", "w:kern",
+        "w:w", "w:effect", "w:bdr", "w:fitText", "w:vanish",
+        "w:webHidden", "w:rtl", "w:cs", "w:em", "w:imprint",
+        "w:shadow", "w:emboss", "w:outline", "w:noProof", "w:lang",
+        "w:jc", "w:bidi", "w:pBdr", "w:top", "w:left", "w:bottom",
+        "w:right", "w:between", "w:bar", "w:insideH", "w:insideV",
+        "w:styles", "w:style", "w:name", "w:basedOn", "w:next",
+        "w:qFormat", "w:uiPriority", "w:link", "w:autoRedefine",
+        "w:hidden", "w:semiHidden", "w:unhideWhenUsed",
+    },
+    "layout": {
+        "w:pgSz", "w:pgMar", "w:cols", "w:col", "w:docGrid",
+        "w:spacing", "w:ind", "w:keepNext", "w:keepLines",
+        "w:pageBreakBefore", "w:widowControl", "w:outlineLvl",
+        "w:suppressLineNumbers", "w:suppressAutoHyphens", "w:wordWrap",
+        "w:autoSpaceDE", "w:autoSpaceDN",
+    },
+    "number": {
+        "w:numPr", "w:ilvl", "w:numId", "w:listPr", "w:numbering",
+        "w:abstractNum", "w:num", "w:lvl", "w:start", "w:numFmt",
+        "w:lvlText", "w:lvlJc", "w:suff",
+    },
+    "table": {
+        "w:tbl", "w:tblPr", "w:tblGrid", "w:gridCol", "w:tblW",
+        "w:tblBorders", "w:tblLayout", "w:tblCellMar", "w:tblCellSpacing",
+        "w:tblInd", "w:tblLook", "w:tblStyle", "w:tblStyleRowBandSize",
+        "w:tblStyleColBandSize", "w:tblpPr", "w:tblOverlap", "w:tblHeader",
+        "w:tr", "w:trPr", "w:trHeight", "w:cantSplit", "w:tc",
+        "w:tcPr", "w:tcW", "w:tcBorders", "w:tcMar", "w:gridSpan",
+        "w:vMerge", "w:vAlign", "w:hideMark", "w:noWrap", "w:tcFitText",
+    },
+    "media": {
+        "w:drawing", "w:pict", "w:object", "wp:inline", "wp:anchor",
+        "a:blip", "pic:pic", "pic:nvPicPr", "pic:cNvPr", "pic:blipFill",
+        "pic:spPr",
+    },
+    "reference": {
+        "w:hyperlink", "w:bookmarkStart", "w:bookmarkEnd",
+        "w:headerReference", "w:footerReference", "w:hdr", "w:ftr",
+        "w:footnoteReference", "w:endnoteReference", "w:footnote",
+        "w:endnote", "w:footnotes", "w:endnotes",
+    },
+    "section": {
+        "w:sectPr", "w:type", "w:titlePg", "w:pgNumType",
+        "w:pgBorders", "w:formProt", "w:rtlGutter",
+    },
+    "review": {
+        "w:commentReference", "w:comment", "w:commentRangeStart",
+        "w:commentRangeEnd", "w:comments", "w14:commentEx",
+        "w15:commentEx", "w15:color", "w:ins", "w:del", "w:delText",
+        "w:rPrChange", "w:pPrChange", "w:tcPrChange", "w:trPrChange",
+        "w:tblPrChange", "w:tblGridChange", "w:sectPrChange",
+        "w:moveTo", "w:moveFrom", "w:moveToRangeStart",
+        "w:moveToRangeEnd", "w:moveFromRangeStart", "w:moveFromRangeEnd",
+    },
+    "control": {
+        "w:sdt", "w:sdtPr", "w:sdtContent", "w:sdtEndPr", "w:alias",
+        "w:tag", "w:id", "w:placeholder", "w:showingPlcHdr",
+        "w:dataBinding", "w:date", "w:dropDownList", "w:comboBox",
+        "w:equation", "w:docPartObj", "w:fldChar", "w:instrText",
+        "w:fldSimple", "w:fldData", "w:ffData", "w:calcOnExit",
+        "w:checkBox", "w:ddList", "w:textInput", "w:control",
+        "w:txbxContent",
+    },
+    "setting": {
+        "w:rsid", "w:settings", "w:zoom", "w:proofState",
+        "w:trackRevisions", "w:documentProtection", "w:defaultTabStop",
+        "w:compat",
+    },
+    "formula": {
+        "m:oMathPara", "m:oMathParaPr", "m:oMath", "m:r", "m:t",
+        "m:f", "m:rad", "m:deg", "m:den", "m:num", "m:sup", "m:sub",
+        "m:m", "m:ctrlPr",
+    },
+    "graphic": {
+        "v:shape", "v:rect", "v:oval", "v:line", "v:textbox",
+        "v:imagedata", "o:gfxdata", "wps:wsp", "wps:cNvSpPr",
+        "wps:spPr", "wps:style", "wps:txbx", "wps:bodyPr",
+        "wpg:wgp", "wpc:wpc", "wp:extent", "wp:docPr",
+        "wp:effectExtent", "wp:wrapSquare", "wp:wrapTight",
+        "wp:wrapThrough", "wp:wrapTopAndBottom", "a:graphic",
+        "a:graphicData", "a:extLst", "a:prstGeom", "a:solidFill",
+        "a:gradFill",
+    },
+    "custom": {
+        "w:customXml", "w:customXmlPr", "w:customXmlMoveFromRangeStart",
+        "w:customXmlMoveFromRangeEnd", "w:customXmlMoveToRangeStart",
+        "w:customXmlMoveToRangeEnd", "w:attr",
+    },
+    "info": {
+        "cp:coreProperties", "dc:title", "dc:creator", "dc:description",
+        "dc:subject", "cp:lastModifiedBy", "cp:revision", "cp:version",
+        "dcterms:created", "dcterms:modified", "ep:Properties",
+        "ep:Application", "ep:Template", "ep:Pages", "ep:Words",
+        "ep:Characters", "ep:CharactersWithSpaces", "ep:Lines",
+        "ep:Paragraphs", "vt:lpwstr", "vt:i4", "vt:bool", "vt:filetime",
+    },
+    "theme": {
+        "a:theme", "a:themeElements", "a:clrScheme", "a:fontScheme",
+        "a:fmtScheme", "w:fonts", "w:font", "w:pitch", "w:sig",
+        "w:panose1", "w:charset", "w:family",
+    },
+    "extra": {
+        "w:background", "w:docVars", "w:docVar", "w:smartTag",
+        "w:smartTagPr", "w:ruby", "w:rubyPr", "w:rubyBase", "w:rt",
+        "w:framePr", "w:dropCap", "w:kinsoku", "w:overflowPunct",
+        "w:glossaryDocument", "w:docParts", "w:docPart",
+        "w:docPartPr", "w:category", "w:behavior",
+    },
+}
+
+
 def _process_master_tags(
-    data: dict[str, dict[str, str]],
+    data: dict[str, Any],
 ) -> tuple[
     dict[str, str],
     dict[str, str],
@@ -73,15 +198,29 @@ def _process_master_tags(
     json_to_xml: dict[str, str] = {}
     categories: dict[str, dict[str, str]] = {}
 
-    for category, tags in data.items():
-        if isinstance(tags, dict):
-            categories[category] = tags  # Store category mappings
+    is_flat = any(isinstance(v, str) for v in data.values())
 
-            for xml_tag, json_name in tags.items():
-                xml_to_json[xml_tag] = json_name  # Store XML to JSON mapping
-
+    if is_flat:
+        for xml_tag, json_name in data.items():
+            if isinstance(json_name, str):
+                xml_to_json[xml_tag] = json_name
                 if json_name not in json_to_xml:
-                    json_to_xml[json_name] = xml_tag  # Store first reverse mapping
+                    json_to_xml[json_name] = xml_tag
+
+        for cat, tags in _KNOWN_TAG_CATEGORIES.items():
+            cat_dict = {t: xml_to_json[t] for t in tags if t in xml_to_json}
+            if cat_dict:
+                categories[cat] = cat_dict
+    else:
+        for category, tags in data.items():
+            if isinstance(tags, dict):
+                categories[category] = tags  # Store category mappings
+
+                for xml_tag, json_name in tags.items():
+                    xml_to_json[xml_tag] = json_name  # Store XML to JSON mapping
+
+                    if json_name not in json_to_xml:
+                        json_to_xml[json_name] = xml_tag  # Store first reverse mapping
 
     return xml_to_json, json_to_xml, categories
 

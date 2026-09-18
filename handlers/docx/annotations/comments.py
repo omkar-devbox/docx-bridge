@@ -4,7 +4,7 @@ from typing import Any
 import xml.etree.ElementTree as ET
 
 from handlers.docx.base import BaseHandler, qn
-from handlers.docx.paragraph import ParagraphHandler
+from handlers.docx.text import ParagraphHandler
 
 
 class CommentsHandler(BaseHandler):

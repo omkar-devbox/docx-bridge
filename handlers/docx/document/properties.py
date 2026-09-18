@@ -1,4 +1,4 @@
-"""Handler for OPC document metadata (docProps/core.xml and docProps/app.xml)."""
+"""Handler for OPC document metadata (docProps/core.xml, docProps/app.xml)."""
 
 from datetime import datetime, timezone
 from typing import Any

@@ -354,7 +354,7 @@ class TestHandlers(unittest.TestCase):
         self.assertEqual(p_handler, p_handler_by_type)
 
     def test_common_units(self):
-        from handlers.common.units import (
+        from handlers.common.helpers import (
             dxa_to_pt,
             pt_to_dxa,
             inches_to_dxa,
@@ -374,7 +374,7 @@ class TestHandlers(unittest.TestCase):
         self.assertEqual(pt_to_half_points(12), 24)
 
     def test_common_color(self):
-        from handlers.common.color import bgr_to_hex, hex_to_bgr, normalize_hex_color
+        from handlers.common.helpers import bgr_to_hex, hex_to_bgr, normalize_hex_color
         # Red in BGR is 0x0000FF (255)
         self.assertEqual(bgr_to_hex(0x0000FF), "FF0000")
         # Green in BGR is 0x00FF00 (65280)

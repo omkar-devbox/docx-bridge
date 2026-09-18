@@ -5,7 +5,7 @@ from parser.docx.xml_to_json import XmlToJsonParser
 from parser.docx.json_to_xml import JsonToXmlParser
 from handlers.docx.document import DocumentHandler
 from handlers.docx.media import MediaHandler
-from handlers.docx.styles import StylesHandler
+from handlers.docx.formatting import StylesHandler
 from handlers.docx.base import qn
 
 
