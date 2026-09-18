@@ -134,82 +134,6 @@ class TestRoundtrip(unittest.TestCase):
                 c_pprs = list(c_doc.iter("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}pPr"))
                 self.assertEqual(len(p_pprs), len(c_pprs), f"Paragraph properties (pPr) count mismatch in {filename}")
 
-    def _verify_doc_exact_match(self, filename: str):
-        """Verify 100% exact match between parent DOC and child DOC."""
-        from pathlib import Path
-        import tempfile
-        from main import doc_to_json, json_to_doc
-        from utils.common.json import load_json
-        from formats.doc.cfbf import CFBReader
-
-        doc_path = Path(__file__).resolve().parent.parent.parent / "Test" / "files" / filename
-        if not doc_path.exists():
-            self.skipTest(f"Test/files/{filename} not found")
-
-        with tempfile.TemporaryDirectory() as td:
-            td_path = Path(td)
-            parent_json = td_path / "parent.json"
-            child_doc = td_path / f"{doc_path.stem}_child.doc"
-            child_json = td_path / "child.json"
-
-            # 1. Parent DOC -> JSON AST
-            doc_to_json(doc_path, parent_json, mode="simple")
-
-            # 2. JSON AST -> Child DOC
-            json_to_doc(parent_json, child_doc)
-
-            # 3. Child DOC -> JSON AST
-            doc_to_json(child_doc, child_json, mode="simple")
-
-            # 4. Assert 100% AST roundtrip exact match (zero differences)
-            d_parent = load_json(parent_json)
-            d_child = load_json(child_json)
-
-            def deep_diff(d1, d2, path=""):
-                diffs = []
-                if type(d1) != type(d2):
-                    return [(path, "type", type(d1).__name__, type(d2).__name__)]
-                if isinstance(d1, dict):
-                    for k in sorted(set(d1.keys()) - set(d2.keys())):
-                        diffs.append((f"{path}.{k}", "missing_in_child", d1[k], None))
-                    for k in sorted(set(d2.keys()) - set(d1.keys())):
-                        diffs.append((f"{path}.{k}", "extra_in_child", None, d2[k]))
-                    for k in sorted(set(d1.keys()) & set(d2.keys())):
-                        diffs.extend(deep_diff(d1[k], d2[k], f"{path}.{k}"))
-                elif isinstance(d1, list):
-                    if len(d1) != len(d2):
-                        diffs.append((path, f"length mismatch {len(d1)} vs {len(d2)}", None, None))
-                    for i in range(min(len(d1), len(d2))):
-                        diffs.extend(deep_diff(d1[i], d2[i], f"{path}[{i}]"))
-                else:
-                    if d1 != d2:
-                        diffs.append((path, "value mismatch", d1, d2))
-                return diffs
-
-            diffs = deep_diff(d_parent, d_child)
-            self.assertEqual(diffs, [], f"AST differences found in {filename}: {diffs[:5]}")
-
-            # 5. Assert CFBF streams and style structure parity
-            with open(doc_path, "rb") as fp, open(child_doc, "rb") as fc:
-                cfb_p = CFBReader(fp)
-                cfb_c = CFBReader(fc)
-
-                for req_stream in ["WordDocument", "1Table", "\x05SummaryInformation"]:
-                    self.assertTrue(cfb_p.has_stream(req_stream), f"Parent missing {req_stream}")
-                    self.assertTrue(cfb_c.has_stream(req_stream), f"Child missing {req_stream}")
-
-            self.assertEqual(len(d_parent.get("styles", {})), len(d_child.get("styles", {})))
-            self.assertEqual(len(d_parent.get("sections", [])), len(d_child.get("sections", [])))
-            p_content = d_parent["sections"][0]["content"]
-            c_content = d_child["sections"][0]["content"]
-            self.assertEqual(len(p_content), len(c_content))
-
-            p_tables = [x for x in p_content if x.get("type") == "table"]
-            c_tables = [x for x in c_content if x.get("type") == "table"]
-            self.assertEqual(len(p_tables), len(c_tables))
-            for pt, ct in zip(p_tables, c_tables):
-                self.assertEqual(len(pt.get("rows", [])), len(ct.get("rows", [])))
-
     def test_sudeep_singh_bish_roundtrip(self):
         """Verify SudeepSinghBish.docx converts to JSON and back with 100% exact match fidelity."""
         self._verify_docx_exact_match("SudeepSinghBish.docx")
@@ -222,13 +146,6 @@ class TestRoundtrip(unittest.TestCase):
         """Verify test_bullet.docx converts to JSON and back with 100% exact match fidelity."""
         self._verify_docx_exact_match("test_bullet.docx")
 
-    def test_q_doc_roundtrip(self):
-        """Verify Q.doc converts to JSON and back with 100% exact match fidelity."""
-        self._verify_doc_exact_match("Q.doc")
-
 
 if __name__ == "__main__":
     unittest.main()
-
-
-

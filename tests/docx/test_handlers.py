@@ -98,20 +98,6 @@ class TestConfigJson(unittest.TestCase):
         self.assertIn("a4", DOCX_CONFIG_DATA["page_sizes"])
         self.assertEqual(load_docx_config(DOCX_CONFIG_FILE), DOCX_CONFIG_DATA)
 
-    def test_doc_config_loaded(self):
-        from config import DOC_CONFIG_DATA, DOC_CONFIG_FILE, load_doc_config
-        self.assertIsInstance(DOC_CONFIG_DATA, dict)
-        self.assertIn("format_info", DOC_CONFIG_DATA)
-        self.assertIn("streams", DOC_CONFIG_DATA)
-        self.assertIn("fib", DOC_CONFIG_DATA)
-        self.assertIn("summary_information_pids", DOC_CONFIG_DATA)
-        self.assertIn("document_summary_pids", DOC_CONFIG_DATA)
-        self.assertIn("sprm_categories", DOC_CONFIG_DATA)
-        self.assertIn("property_mappings", DOC_CONFIG_DATA)
-        self.assertIn("default_style", DOC_CONFIG_DATA)
-        self.assertIn("default_margins", DOC_CONFIG_DATA)
-        self.assertEqual(DOC_CONFIG_DATA["format_info"]["extension"], ".doc")
-        self.assertEqual(load_doc_config(DOC_CONFIG_FILE), DOC_CONFIG_DATA)
 
     def test_schema_orders_loaded(self):
         from config import (
@@ -402,53 +388,6 @@ class TestHandlers(unittest.TestCase):
         self.assertEqual(normalize_hex_color("#ff00aa"), "FF00AA")
         self.assertEqual(normalize_hex_color("auto"), "auto")
 
-    def test_doc_handlers(self):
-        from handlers.doc import (
-            DocHandlerRegistry,
-            DocDocumentHandler,
-            DocParagraphHandler,
-            DocRunHandler,
-            DocTableHandler,
-            DocSectionsHandler,
-        )
-        registry = DocHandlerRegistry()
-        self.assertIsInstance(registry.run_handler, DocRunHandler)
-        self.assertIsInstance(registry.paragraph_handler, DocParagraphHandler)
-        self.assertIsInstance(registry.table_handler, DocTableHandler)
-        self.assertIsInstance(registry.document_handler, DocDocumentHandler)
-        self.assertIsInstance(registry.sections_handler, DocSectionsHandler)
-
-        # Run handler test
-        run_json = registry.run_handler.to_json({
-            "text": "Legacy DOC test",
-            "sprmCFBold": 1,
-            "sprmCFItalic": 0,
-            "sprmCHps": 28,
-            "sprmCColor": 0x0000FF,  # Red in BGR
-        })
-        self.assertEqual(run_json["type"], "run")
-        self.assertEqual(run_json["text"], "Legacy DOC test")
-        self.assertTrue(run_json["bold"])
-        self.assertEqual(run_json["size"], 28)
-        self.assertEqual(run_json["color"], "FF0000")
-
-        # Paragraph handler test
-        p_json = registry.paragraph_handler.to_json({
-            "sprmPJc": 1,  # Center
-            "sprmPDyaBefore": 240,
-            "text": "Centered heading",
-        })
-        self.assertEqual(p_json["type"], "paragraph")
-        self.assertEqual(p_json["align"], "center")
-        self.assertEqual(p_json["spacing"]["before"], 240)
-
-        # Sections handler test
-        sec_json = registry.sections_handler.to_json({
-            "sprmSDyaTop": 1440,
-            "sprmSDyaBottom": 1440,
-        })
-        self.assertEqual(sec_json["page"]["margins"]["top"], 1440)
-        self.assertEqual(sec_json["page"]["margins"]["bottom"], 1440)
 
     def test_docx_direct_imports(self):
         from handlers.docx import (

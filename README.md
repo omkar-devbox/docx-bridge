@@ -11,16 +11,12 @@ A modular Python engine for bi-directional conversion between DOCX (Wordprocessi
 │
 ├── converter/
 │   ├── __init__.py
-│   ├── docx/
-│   │   ├── __init__.py
-│   │   ├── docx_to_json.py
-│   │   ├── json_to_docx.py
-│   │   ├── numbering.py
-│   │   └── packaging.py
-│   └── doc/
+│   └── docx/
 │       ├── __init__.py
-│       ├── doc_to_json.py
-│       └── json_to_doc.py
+│       ├── docx_to_json.py
+│       ├── json_to_docx.py
+│       ├── numbering.py
+│       └── packaging.py
 │
 ├── config/
 │   ├── __init__.py
@@ -32,74 +28,65 @@ A modular Python engine for bi-directional conversion between DOCX (Wordprocessi
 │   └── content-types.json
 │
 ├── parser/
-│   ├── xml_to_json.py
-│   └── json_to_xml.py
+│   ├── __init__.py
+│   └── docx/
+│       ├── xml_to_json.py
+│       └── json_to_xml.py
 │
 ├── formats/
 │   ├── __init__.py
-│   ├── docx/
-│   │   ├── reader.py
-│   │   └── writer.py
-│   └── doc/
+│   └── docx/
 │       ├── reader.py
 │       └── writer.py
 │
 ├── handlers/
 │   ├── __init__.py
-│   ├── base.py
-│   ├── document.py
-│   ├── paragraph.py
-│   ├── run.py
-│   ├── table.py
-│   ├── styles.py
-│   ├── numbering.py
-│   ├── sections.py
-│   ├── media.py
-│   └── relationships.py
+│   ├── common/
+│   │   ├── base.py
+│   │   ├── color.py
+│   │   ├── helpers.py
+│   │   ├── registry.py
+│   │   └── units.py
+│   └── docx/
+│       ├── base.py
+│       ├── comments.py
+│       ├── document.py
+│       ├── header_footer.py
+│       ├── media.py
+│       ├── notes.py
+│       ├── numbering.py
+│       ├── paragraph.py
+│       ├── properties.py
+│       ├── relationships.py
+│       ├── run.py
+│       ├── sections.py
+│       ├── settings.py
+│       ├── styles.py
+│       └── table.py
 │
 ├── utils/
-│   ├── xml.py
-│   └── json.py
-│
-├── docs/
-│   ├── README.md                       # Master Documentation Hub & AI Index
-│   ├── docx/                           # Modern DOCX (ECMA-376 / OpenXML) docs
-│   │   ├── README.md
-│   │   ├── 01-architecture-and-pipeline.md
-│   │   ├── 02-schema-and-ast.md
-│   │   ├── 03-handlers-and-openxml.md
-│   │   └── 04-ai-generation-guide.md
-│   └── doc/                            # Legacy DOC (MS-DOC / CFBF) docs
-│       ├── README.md
-│       ├── 01-cfbf-and-streams.md
-│       ├── 02-fib-and-data-structures.md
-│       ├── 03-doc-to-json-bridge.md
-│       └── 04-ai-integration-guide.md
+│   ├── common/
+│   │   └── json.py
+│   └── docx/
+│       └── xml.py
 │
 ├── tests/
-│   └── test_roundtrip.py
+│   └── docx/
+│       ├── test_audit.py
+│       ├── test_handlers.py
+│       ├── test_new_docx_features.py
+│       ├── test_property_fidelity.py
+│       ├── test_roundtrip.py
+│       ├── test_section_styles.py
+│       ├── test_simple_format.py
+│       └── test_standalone_roundtrip.py
 │
 └── Test/
-    ├── docxToJson.py
-    ├── jsonToDocx.py
+    ├── docx/
+    │   ├── docxToJson.py
+    │   └── jsonToDocx.py
     └── files/                          ← place your .docx / .json files here
 ```
-
-## 📖 Documentation Suite
-
-Comprehensive, section-wise, and AI-compatible documentation is organized under [`docs/`](docs/README.md):
-
-- **[Master Documentation Hub](docs/README.md)**: Architectural diagrams, format comparison matrices, and AI ingestion protocols.
-- **[DOCX Format Documentation (`docs/docx/`)](docs/docx/README.md)**:
-  - [Architecture & Packaging Pipeline](docs/docx/01-architecture-and-pipeline.md): OPC ZIP packaging, relationship trees, readers and writers.
-  - [Unified JSON AST Specification](docs/docx/02-schema-and-ast.md): Complete typed schema (Simple vs Raw mode), sections, runs, tables, lists.
-  - [OpenXML Handlers & Tag Mappings](docs/docx/03-handlers-and-openxml.md): ISO/IEC 29500 schema enforcement, unit conversions, and numbering engines.
-  - [AI / LLM Document Generation Guide](docs/docx/04-ai-generation-guide.md): Prompting templates, golden examples, and anti-hallucination rules.
-- **[Legacy DOC Binary Documentation (`docs/doc/`)](docs/doc/README.md)**:
-  - [CFBF & Stream Architecture](docs/doc/01-cfbf-and-streams.md): Compound File Binary Format, OLE structured storage, and FAT/SAT sectors.
-  - [FIB & Memory Structures](docs/doc/02-fib-and-data-structures.md): File Information Block offsets, Clx piece tables, and SPRM opcodes.
-  - [DOC to JSON Bridge & Parity Mapping](docs/doc/03-doc-to-json-bridge.md): Normalization into the canonical AST.
-  - [AI Binary Analysis & Diagnostic Guide](docs/doc/04-ai-integration-guide.md): Automated verification scripts and troubleshooting.
 
 ## Setup & Installation
 
@@ -117,34 +104,34 @@ pip install -e ".[dev]"
 
 ## Running the Scripts
 
-All scripts are run from the **project root** (`DocxToJson/`).
+All scripts are run from the **project root** (`docx-bridge/`).
 
-### DOCX → JSON  (`Test/docxToJson.py`)
+### DOCX → JSON  (`Test/docx/docxToJson.py`)
 
 Converts a `.docx` file into structured JSON. Output is saved in the **same folder** as the input.
 
 **Default (uses `FILE_PATH` set inside the script):**
 ```bash
-python3 Test/docxToJson.py
+python3 Test/docx/docxToJson.py
 ```
 
 **Pass a custom file path as a CLI argument:**
 ```bash
-python3 Test/docxToJson.py path/to/your/file.docx
+python3 Test/docx/docxToJson.py path/to/your/file.docx
 ```
 
 **Choose output mode:**
 ```bash
 # Simple mode (clean, compact JSON) — default
-python3 Test/docxToJson.py path/to/file.docx --simple
+python3 Test/docx/docxToJson.py path/to/file.docx --simple
 
 # Raw mode (full OpenXML mapping with all properties)
-python3 Test/docxToJson.py path/to/file.docx --raw
+python3 Test/docx/docxToJson.py path/to/file.docx --raw
 ```
 
 ---
 
-### JSON → DOCX  (`Test/jsonToDocx.py`)
+### JSON → DOCX  (`Test/docx/jsonToDocx.py`)
 
 Converts a structured JSON file back into a `.docx`. Output is saved in the **same folder** as the input.
 
@@ -152,20 +139,33 @@ Converts a structured JSON file back into a `.docx`. Output is saved in the **sa
 
 **Default (uses `FILE_PATH` set inside the script):**
 ```bash
-python3 Test/jsonToDocx.py
+python3 Test/docx/jsonToDocx.py
 ```
 
 **Pass a custom file path as a CLI argument:**
 ```bash
-python3 Test/jsonToDocx.py path/to/your/file.json
+python3 Test/docx/jsonToDocx.py path/to/your/file.json
 ```
 
 > If a `.docx` with the same name already exists, the output is saved as `<name>_converted.docx` to avoid overwriting.
 
 ---
 
+## CLI Usage
+
+```bash
+# Convert DOCX to JSON
+python3 cli.py docx-to-json input.docx -o output.json --mode simple
+
+# Convert JSON to DOCX
+python3 cli.py json-to-docx input.json -o output.docx
+```
+
+---
+
 ## Running Tests
 
 ```bash
-python3 -m pytest tests/
+python3 -m unittest discover -s tests/docx
 ```
+

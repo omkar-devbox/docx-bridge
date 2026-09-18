@@ -1,15 +1,13 @@
-"""Handlers package for document components across DOCX and legacy DOC formats.
+"""Handlers package for document components across DOCX format.
 
 Submodules:
 - `handlers.docx`: OpenXML (.docx) handlers
-- `handlers.doc`: Legacy binary (.doc) handlers
 - `handlers.common`: Shared base classes, unit conversions, and helpers
 """
 
 # Subpackage modules
 from . import common
 from . import docx
-from . import doc
 
 # Common exports
 from .common import (
@@ -59,25 +57,10 @@ from .docx import (
     get_tags_for_category,
 )
 
-# Legacy DOC handlers
-from .doc import (
-    DocBaseHandler,
-    DocDocumentHandler,
-    DocParagraphHandler,
-    DocRunHandler,
-    DocTableHandler,
-    DocStylesHandler,
-    DocNumberingHandler,
-    DocSectionsHandler,
-    DocMediaHandler,
-    DocHandlerRegistry,
-)
-
 __all__ = [
     # Subpackages
     "common",
     "docx",
-    "doc",
     # Common
     "CommonBaseHandler",
     "BaseHandlerRegistry",
@@ -120,15 +103,5 @@ __all__ = [
     "tag_to_name",
     "name_to_tag",
     "get_tags_for_category",
-    # DOC Handlers
-    "DocBaseHandler",
-    "DocDocumentHandler",
-    "DocParagraphHandler",
-    "DocRunHandler",
-    "DocTableHandler",
-    "DocStylesHandler",
-    "DocNumberingHandler",
-    "DocSectionsHandler",
-    "DocMediaHandler",
-    "DocHandlerRegistry",
 ]
+
