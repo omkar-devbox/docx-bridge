@@ -3,10 +3,11 @@
 from typing import Any
 import xml.etree.ElementTree as ET
 
+from config import NAMESPACES
 from handlers.docx.base import BaseHandler, qn, local_name
 
 
-THEME_NS = "http://schemas.openxmlformats.org/drawingml/2006/main"
+THEME_NS = NAMESPACES.get("a", "http://schemas.openxmlformats.org/drawingml/2006/main")
 
 
 class ThemeHandler(BaseHandler):

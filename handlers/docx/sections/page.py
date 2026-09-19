@@ -4,7 +4,12 @@ from typing import Any
 import xml.etree.ElementTree as ET
 
 from handlers.docx.base import BaseHandler, qn
-from config import PAGE_SIZES_DATA, DEFAULT_ORIENTATION
+from config import (
+    DEFAULT_ORIENTATION,
+    DEFAULT_PAGE_HEIGHT,
+    DEFAULT_PAGE_WIDTH,
+    PAGE_SIZES_DATA,
+)
 
 
 class PageHandler(BaseHandler):
@@ -83,10 +88,14 @@ class PageHandler(BaseHandler):
         sz_attrib = {}
         if "width" in sz_data:
             sz_attrib[qn("w:w")] = str(sz_data["width"])
+        elif DEFAULT_PAGE_WIDTH:
+            sz_attrib[qn("w:w")] = str(DEFAULT_PAGE_WIDTH)
         elif "a4" in PAGE_SIZES_DATA:
             sz_attrib[qn("w:w")] = str(PAGE_SIZES_DATA["a4"]["width"])
         if "height" in sz_data:
             sz_attrib[qn("w:h")] = str(sz_data["height"])
+        elif DEFAULT_PAGE_HEIGHT:
+            sz_attrib[qn("w:h")] = str(DEFAULT_PAGE_HEIGHT)
         elif "a4" in PAGE_SIZES_DATA:
             sz_attrib[qn("w:h")] = str(PAGE_SIZES_DATA["a4"]["height"])
         if "orientation" in sz_data and sz_data["orientation"] != DEFAULT_ORIENTATION:

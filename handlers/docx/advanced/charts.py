@@ -3,10 +3,11 @@
 from typing import Any
 import xml.etree.ElementTree as ET
 
+from config import NAMESPACES
 from handlers.docx.base import BaseHandler, qn, local_name
 
 
-CHART_NS = "http://schemas.openxmlformats.org/drawingml/2006/chart"
+CHART_NS = NAMESPACES.get("c", "http://schemas.openxmlformats.org/drawingml/2006/chart")
 
 
 class ChartsHandler(BaseHandler):

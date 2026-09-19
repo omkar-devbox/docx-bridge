@@ -3,41 +3,38 @@
 from typing import Any
 import xml.etree.ElementTree as ET
 
+from config import (
+    CONTENT_TYPES_DEFAULTS,
+    CONTENT_TYPES_NAMESPACE,
+    CONTENT_TYPES_OVERRIDES,
+)
 from handlers.docx.base import BaseHandler, qn, local_name
 
 
-CONTENT_TYPES_NS = "http://schemas.openxmlformats.org/package/2006/content-types"
+CONTENT_TYPES_NS = CONTENT_TYPES_NAMESPACE
 
-DEFAULT_EXTENSIONS: dict[str, str] = {
-    "rels": "application/vnd.openxmlformats-package.relationships+xml",
-    "xml": "application/xml",
-    "png": "image/png",
-    "jpeg": "image/jpeg",
-    "jpg": "image/jpeg",
-    "gif": "image/gif",
-    "emf": "image/x-emf",
-    "wmf": "image/x-wmf",
-    "tiff": "image/tiff",
-    "tif": "image/tiff",
-    "bmp": "image/bmp",
-    "svg": "image/svg+xml",
-}
+DEFAULT_EXTENSIONS: dict[str, str] = dict(CONTENT_TYPES_DEFAULTS)
 
-DEFAULT_OVERRIDES: dict[str, str] = {
-    "/word/document.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
-    "/word/styles.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml",
-    "/word/numbering.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml",
-    "/word/settings.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml",
-    "/word/webSettings.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml",
-    "/word/fontTable.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml",
-    "/word/theme/theme1.xml": "application/vnd.openxmlformats-officedocument.theme+xml",
-    "/docProps/core.xml": "application/vnd.openxmlformats-package.core-properties+xml",
-    "/docProps/app.xml": "application/vnd.openxmlformats-officedocument.extended-properties+xml",
-}
+DEFAULT_OVERRIDES: dict[str, str] = dict(CONTENT_TYPES_OVERRIDES)
 
 
 class ContentTypesHandler(BaseHandler):
     """Handles parsing and generating [Content_Types].xml."""
+
+    def __init__(self, content_types_config: dict[str, Any] | None = None):
+        self.content_types_config = content_types_config or {}
+        self.ns = (
+            self.content_types_config.get("namespace")
+            or CONTENT_TYPES_NS
+        )
+        self.default_extensions = dict(
+            self.content_types_config.get("defaults")
+            or DEFAULT_EXTENSIONS
+        )
+        self.default_overrides = dict(
+            self.content_types_config.get("overrides")
+            or DEFAULT_OVERRIDES
+        )
 
     def to_json(self, element: ET.Element) -> dict[str, Any]:
         """Convert [Content_Types].xml element to JSON defaults and overrides."""
@@ -64,10 +61,11 @@ class ContentTypesHandler(BaseHandler):
 
     def to_xml(self, data: dict[str, Any] | None = None) -> ET.Element:
         """Construct [Content_Types].xml root element."""
-        root = ET.Element(f"{{{CONTENT_TYPES_NS}}}Types")
+        ns = getattr(self, "ns", CONTENT_TYPES_NS)
+        root = ET.Element(f"{{{ns}}}Types")
 
-        defaults = dict(DEFAULT_EXTENSIONS)
-        overrides = dict(DEFAULT_OVERRIDES)
+        defaults = dict(getattr(self, "default_extensions", DEFAULT_EXTENSIONS))
+        overrides = dict(getattr(self, "default_overrides", DEFAULT_OVERRIDES))
 
         if data:
             if "defaults" in data:
@@ -76,10 +74,10 @@ class ContentTypesHandler(BaseHandler):
                 overrides.update(data["overrides"])
 
         for ext, ct in sorted(defaults.items()):
-            ET.SubElement(root, f"{{{CONTENT_TYPES_NS}}}Default", {"Extension": ext, "ContentType": ct})
+            ET.SubElement(root, f"{{{ns}}}Default", {"Extension": ext, "ContentType": ct})
 
         for part, ct in sorted(overrides.items()):
-            ET.SubElement(root, f"{{{CONTENT_TYPES_NS}}}Override", {"PartName": part, "ContentType": ct})
+            ET.SubElement(root, f"{{{ns}}}Override", {"PartName": part, "ContentType": ct})
 
         return root
 

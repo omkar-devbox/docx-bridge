@@ -3,10 +3,11 @@
 from typing import Any
 import xml.etree.ElementTree as ET
 
+from config import NAMESPACES
 from handlers.docx.base import BaseHandler, qn, local_name
 
 
-DGM_NS = "http://schemas.openxmlformats.org/drawingml/2006/diagram"
+DGM_NS = NAMESPACES.get("dgm", "http://schemas.openxmlformats.org/drawingml/2006/diagram")
 
 
 class SmartArtHandler(BaseHandler):

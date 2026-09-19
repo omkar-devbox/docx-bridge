@@ -3,10 +3,11 @@
 from typing import Any
 import xml.etree.ElementTree as ET
 
+from config import NAMESPACES
 from handlers.docx.base import BaseHandler, qn, local_name
 
 
-MATH_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
+MATH_NS = NAMESPACES.get("m", "http://schemas.openxmlformats.org/officeDocument/2006/math")
 
 
 class MathHandler(BaseHandler):

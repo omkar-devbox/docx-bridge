@@ -4,14 +4,16 @@ from datetime import datetime, timezone
 from typing import Any
 import xml.etree.ElementTree as ET
 
+from config import NAMESPACES
 from handlers.docx.base import BaseHandler, local_name
 
 
-CORE_NS = "http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
-DC_NS = "http://purl.org/dc/elements/1.1/"
-DCTERMS_NS = "http://purl.org/dc/terms/"
-APP_NS = "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"
-XSI_NS = "http://www.w3.org/2001/XMLSchema-instance"
+CORE_NS = NAMESPACES.get("cp", "http://schemas.openxmlformats.org/package/2006/metadata/core-properties")
+DC_NS = NAMESPACES.get("dc", "http://purl.org/dc/elements/1.1/")
+DCTERMS_NS = NAMESPACES.get("dcterms", "http://purl.org/dc/terms/")
+APP_NS = NAMESPACES.get("ep", "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties")
+XSI_NS = NAMESPACES.get("xsi", "http://www.w3.org/2001/XMLSchema-instance")
+VT_NS = NAMESPACES.get("vt", "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes")
 
 
 # Register namespaces for proper serialization
@@ -20,7 +22,7 @@ ET.register_namespace("dc", DC_NS)
 ET.register_namespace("dcterms", DCTERMS_NS)
 ET.register_namespace("xsi", XSI_NS)
 ET.register_namespace("ep", APP_NS)
-ET.register_namespace("vt", "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes")
+ET.register_namespace("vt", VT_NS)
 
 
 class PropertiesHandler(BaseHandler):

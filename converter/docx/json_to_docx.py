@@ -3,6 +3,21 @@
 from pathlib import Path
 from typing import Any
 
+from config import (
+    APP_PROPERTIES_PART,
+    COMMENTS_PART,
+    CONTENT_TYPES_PART,
+    CORE_PROPERTIES_PART,
+    DOCUMENT_PART,
+    DOCUMENT_RELATIONSHIPS_PART,
+    ENDNOTES_PART,
+    FOOTNOTES_PART,
+    NUMBERING_PART,
+    PACKAGE_RELATIONSHIPS_PART,
+    SETTINGS_PART,
+    STYLES_PART,
+    WEB_SETTINGS_PART,
+)
 from formats.docx.writer import DocxWriter
 from parser.docx.json_to_xml import JsonToXmlParser
 from utils.common.json import load_json
@@ -21,6 +36,9 @@ def json_to_docx(
     json_path: Path | str,
     output_path: Path | str,
     template_docx: Path | str | None = None,
+    docx_config: dict[str, Any] | None = None,
+    content_types_config: dict[str, Any] | None = None,
+    relationships_config: dict[str, Any] | None = None,
 ) -> None:
     """Convert structured JSON back to a DOCX package."""
     json_path = Path(json_path)
@@ -30,7 +48,11 @@ def json_to_docx(
         template_docx = Path(template_docx)
 
     data = load_json(json_path)
-    parser = JsonToXmlParser()
+    parser = JsonToXmlParser(
+        docx_config=docx_config,
+        content_types_config=content_types_config,
+        relationships_config=relationships_config,
+    )
 
     # Automatically use matching DOCX template
     if template_docx is None:
@@ -76,39 +98,84 @@ def json_to_docx(
                 extra_targets.add(f_item.get("target") or f"footer{idx}.xml")
 
     # Build DOCX archive
-    with DocxWriter(output_path) as writer:
+    with DocxWriter(
+        output_path,
+        docx_config=docx_config,
+        content_types_config=content_types_config,
+    ) as writer:
+        ct_data = writer.content_types_config
+        d_config = writer.docx_config
+
+        doc_part = ct_data.get("document") or d_config.get("root_part") or DOCUMENT_PART
+        styles_part = ct_data.get("styles") or STYLES_PART
+        num_part = ct_data.get("numbering") or NUMBERING_PART
+        settings_part = ct_data.get("settings") or SETTINGS_PART
+        web_settings_part = ct_data.get("web_settings") or WEB_SETTINGS_PART
+        core_part = ct_data.get("core_properties") or CORE_PROPERTIES_PART
+        app_part = ct_data.get("app_properties") or APP_PROPERTIES_PART
+        fn_part = ct_data.get("footnotes") or FOOTNOTES_PART
+        en_part = ct_data.get("endnotes") or ENDNOTES_PART
+        comm_part = ct_data.get("comments") or COMMENTS_PART
+        pkg_rels_part = (
+            ct_data.get("other", {}).get("package_relationships")
+            or PACKAGE_RELATIONSHIPS_PART
+        )
+        ct_part = (
+            ct_data.get("other", {}).get("content_types")
+            or CONTENT_TYPES_PART
+        )
+        doc_rels_part = (
+            ct_data.get("document_relationships")
+            or d_config.get("document_relationships_part")
+            or DOCUMENT_RELATIONSHIPS_PART
+        )
+
         copied_parts: set[str] = set()
 
         # Parts to exclude from copying if template is used
         exclude_parts: set[str] = set()
         if "metadata" in data:
-            exclude_parts.update(["docProps/core.xml", "docProps/app.xml"])
+            exclude_parts.update([core_part, app_part])
         if "settings" in data:
-            exclude_parts.add("word/settings.xml")
+            exclude_parts.add(settings_part)
         if "footnotes" in data:
-            exclude_parts.add("word/footnotes.xml")
+            exclude_parts.add(fn_part)
         if "endnotes" in data:
-            exclude_parts.add("word/endnotes.xml")
+            exclude_parts.add(en_part)
         if "comments" in data:
-            exclude_parts.add("word/comments.xml")
+            exclude_parts.add(comm_part)
         for target in extra_targets:
             exclude_parts.add(f"word/{target}")
 
         # Copy non-generated template parts
         if template_docx and template_docx.exists():
-            copied_parts = copy_template_parts(template_docx, writer, exclude_parts=exclude_parts)
+            copied_parts = copy_template_parts(
+                template_docx,
+                writer,
+                exclude_parts=exclude_parts,
+                content_types_data=ct_data,
+                docx_config=d_config,
+            )
         else:
             # Standard OPC root relationships
             writer.write_part(
-                "_rels/.rels",
-                build_root_relationships(),
+                pkg_rels_part,
+                build_root_relationships(
+                    content_types_data=ct_data,
+                    docx_config=d_config,
+                ),
             )
 
             # Standard content types (including any headers/footers)
             extra_content_types = {f"word/{t}" for t in extra_targets}
             writer.write_part(
-                "[Content_Types].xml",
-                build_content_types_xml(data, extra_parts=extra_content_types),
+                ct_part,
+                build_content_types_xml(
+                    data,
+                    extra_parts=extra_content_types,
+                    content_types_data=ct_data,
+                    docx_config=d_config,
+                ),
             )
 
         # --------------------------------
@@ -118,7 +185,7 @@ def json_to_docx(
         doc_xml_bytes = parser.build_document_xml(data)
 
         writer.write_part(
-            "word/document.xml",
+            doc_part,
             doc_xml_bytes,
         )
 
@@ -142,7 +209,7 @@ def json_to_docx(
             )
 
             writer.write_part(
-                "word/styles.xml",
+                styles_part,
                 styles_xml_bytes,
             )
 
@@ -156,7 +223,7 @@ def json_to_docx(
             )
 
             writer.write_part(
-                "word/numbering.xml",
+                num_part,
                 numbering_xml_bytes,
             )
 
@@ -166,14 +233,14 @@ def json_to_docx(
 
         if "metadata" in data or not template_docx:
             meta = data.get("metadata", {})
-            if "docProps/core.xml" not in copied_parts:
+            if core_part not in copied_parts:
                 writer.write_part(
-                    "docProps/core.xml",
+                    core_part,
                     parser.build_core_properties_xml(meta),
                 )
-            if "docProps/app.xml" not in copied_parts:
+            if app_part not in copied_parts:
                 writer.write_part(
-                    "docProps/app.xml",
+                    app_part,
                     parser.build_app_properties_xml(meta),
                 )
 
@@ -181,16 +248,16 @@ def json_to_docx(
         # Settings & WebSettings XML
         # --------------------------------
 
-        if "word/settings.xml" not in copied_parts:
+        if settings_part not in copied_parts:
             if "settings" in data or not template_docx:
                 writer.write_part(
-                    "word/settings.xml",
+                    settings_part,
                     parser.build_settings_xml(data.get("settings")),
                 )
-        if "word/webSettings.xml" not in copied_parts:
+        if web_settings_part not in copied_parts:
             if "settings" in data or not template_docx:
                 writer.write_part(
-                    "word/webSettings.xml",
+                    web_settings_part,
                     parser.build_web_settings_xml(),
                 )
 
@@ -236,15 +303,15 @@ def json_to_docx(
         # Footnotes & Endnotes XML
         # --------------------------------
 
-        if "footnotes" in data and "word/footnotes.xml" not in copied_parts:
+        if "footnotes" in data and fn_part not in copied_parts:
             writer.write_part(
-                "word/footnotes.xml",
+                fn_part,
                 parser.build_footnotes_xml(data["footnotes"]),
             )
 
-        if "endnotes" in data and "word/endnotes.xml" not in copied_parts:
+        if "endnotes" in data and en_part not in copied_parts:
             writer.write_part(
-                "word/endnotes.xml",
+                en_part,
                 parser.build_endnotes_xml(data["endnotes"]),
             )
 
@@ -252,9 +319,9 @@ def json_to_docx(
         # Comments XML
         # --------------------------------
 
-        if "comments" in data and "word/comments.xml" not in copied_parts:
+        if "comments" in data and comm_part not in copied_parts:
             writer.write_part(
-                "word/comments.xml",
+                comm_part,
                 parser.build_comments_xml(data["comments"]),
             )
 
@@ -313,10 +380,20 @@ def json_to_docx(
 
         # Preserve template internal relationships
         if template_docx and template_docx.exists():
-            merge_template_relationships(template_docx, rels_list)
+            merge_template_relationships(
+                template_docx,
+                rels_list,
+                relationships_data=relationships_config,
+                content_types_data=ct_data,
+                docx_config=docx_config,
+            )
 
         # Add numbering and styles relationships if required
-        ensure_package_relationships(rels_list, data)
+        ensure_package_relationships(
+            rels_list,
+            data,
+            content_types_data=ct_data,
+        )
 
         # Write relationships only when required
         if rels_list:
@@ -327,6 +404,7 @@ def json_to_docx(
                     media_targets,
                     copied_parts,
                     extra_targets=extra_targets,
+                    content_types_data=ct_data,
                 )
                 rels_bytes = parser.build_relationships_xml(
                     filtered_rels
@@ -337,7 +415,7 @@ def json_to_docx(
                 )
 
             writer.write_part(
-                "word/_rels/document.xml.rels",
+                doc_rels_part,
                 rels_bytes,
             )
 

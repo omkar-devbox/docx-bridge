@@ -17,6 +17,10 @@
     "bin": "application/vnd.openxmlformats-officedocument.oleObject",
     "vml": "application/vnd.openxmlformats-officedocument.vmlDrawing"
   },
+  "content_types": {
+    "header": "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml",
+    "footer": "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"
+  },
   "overrides": {
     "/word/document.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml",
     "/word/styles.xml": "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml",
@@ -53,7 +57,9 @@
   "core_properties": "docProps/core.xml",
   "app_properties": "docProps/app.xml",
   "custom_properties": "docProps/custom.xml",
+  "document_relationships": "word/_rels/document.xml.rels",
   "relationships": "**/_rels/*.rels",
+  "media_dir": "word/media/",
   "images": {
     "png": "word/media/*.png",
     "jpg": "word/media/*.jpg",

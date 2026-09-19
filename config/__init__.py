@@ -333,6 +333,16 @@ XML_DECLARATION: str = DOCX_CONFIG_DATA.get(
     "",
 )  # XML declaration header
 
+DEFAULT_ENCODING: str = DOCX_CONFIG_DATA.get(
+    "encoding",
+    "utf-8",
+)  # Default text encoding
+
+JSON_CONFIG: dict[str, Any] = DOCX_CONFIG_DATA.get(
+    "json",
+    {},
+)  # JSON serialization configuration
+
 PACKAGE_RELATIONSHIPS_NS: str = RELATIONSHIPS_DATA.get(
     "namespaces", {}
 ).get(
@@ -355,6 +365,83 @@ RELATIONSHIP_TYPES: dict[str, str] = RELATIONSHIPS_DATA.get(
 INTERNAL_PLUMBING_TARGETS: set[str] = set(
     RELATIONSHIPS_DATA.get("internal_plumbing_targets", [])
 )  # Internal plumbing targets set
+
+
+# --------------------------------
+# Package Parts & Patterns
+# --------------------------------
+
+ROOT_PART: str = (
+    DOCX_CONFIG_DATA.get("root_part")
+    or CONTENT_TYPES_DATA.get("document", "word/document.xml")
+)
+DOCUMENT_PART: str = CONTENT_TYPES_DATA.get("document", "word/document.xml")
+STYLES_PART: str = CONTENT_TYPES_DATA.get("styles", "word/styles.xml")
+NUMBERING_PART: str = CONTENT_TYPES_DATA.get("numbering", "word/numbering.xml")
+SETTINGS_PART: str = CONTENT_TYPES_DATA.get("settings", "word/settings.xml")
+WEB_SETTINGS_PART: str = CONTENT_TYPES_DATA.get("web_settings", "word/webSettings.xml")
+FONTS_PART: str = CONTENT_TYPES_DATA.get("fonts", "word/fontTable.xml")
+THEME_PART: str = CONTENT_TYPES_DATA.get("theme", "word/theme/theme1.xml")
+FOOTNOTES_PART: str = CONTENT_TYPES_DATA.get("footnotes", "word/footnotes.xml")
+ENDNOTES_PART: str = CONTENT_TYPES_DATA.get("endnotes", "word/endnotes.xml")
+COMMENTS_PART: str = CONTENT_TYPES_DATA.get("comments", "word/comments.xml")
+COMMENTS_EXTENDED_PART: str = CONTENT_TYPES_DATA.get("comments_extended", "word/commentsExtended.xml")
+COMMENTS_IDS_PART: str = CONTENT_TYPES_DATA.get("comments_ids", "word/commentsIds.xml")
+GLOSSARY_PART: str = CONTENT_TYPES_DATA.get("glossary", "word/glossary/document.xml")
+CORE_PROPERTIES_PART: str = CONTENT_TYPES_DATA.get("core_properties", "docProps/core.xml")
+APP_PROPERTIES_PART: str = CONTENT_TYPES_DATA.get("app_properties", "docProps/app.xml")
+CUSTOM_PROPERTIES_PART: str = CONTENT_TYPES_DATA.get("custom_properties", "docProps/custom.xml")
+
+DOCUMENT_RELATIONSHIPS_PART: str = (
+    CONTENT_TYPES_DATA.get("document_relationships")
+    or DOCX_CONFIG_DATA.get("document_relationships_part")
+    or RELATIONSHIPS_DATA.get("document_relationships")
+    or "word/_rels/document.xml.rels"
+)
+PACKAGE_RELATIONSHIPS_PART: str = (
+    CONTENT_TYPES_DATA.get("other", {}).get("package_relationships")
+    or "_rels/.rels"
+)
+CONTENT_TYPES_PART: str = (
+    CONTENT_TYPES_DATA.get("other", {}).get("content_types")
+    or "[Content_Types].xml"
+)
+
+HEADERS_PATTERN: str = CONTENT_TYPES_DATA.get("headers", "word/header*.xml")
+FOOTERS_PATTERN: str = CONTENT_TYPES_DATA.get("footers", "word/footer*.xml")
+MEDIA_DIR: str = (
+    CONTENT_TYPES_DATA.get("media_dir")
+    or DOCX_CONFIG_DATA.get("media_dir")
+    or "word/media/"
+)
+
+CONTENT_TYPES_NAMESPACE: str = CONTENT_TYPES_DATA.get(
+    "namespace",
+    "http://schemas.openxmlformats.org/package/2006/content-types",
+)
+CONTENT_TYPES_DEFAULTS: dict[str, str] = dict(CONTENT_TYPES_DATA.get("defaults", {}))
+CONTENT_TYPES_OVERRIDES: dict[str, str] = dict(CONTENT_TYPES_DATA.get("overrides", {}))
+CONTENT_TYPE_HEADER: str = CONTENT_TYPES_DATA.get("content_types", {}).get(
+    "header",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml",
+)
+CONTENT_TYPE_FOOTER: str = CONTENT_TYPES_DATA.get("content_types", {}).get(
+    "footer",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml",
+)
+
+COMPATIBILITY_CONFIG: dict[str, str] = DOCX_CONFIG_DATA.get(
+    "compatibility",
+    {
+        "uri": NAMESPACES.get("msword", "http://schemas.microsoft.com/office/word"),
+        "default_mode_name": "compatibilityMode",
+        "default_mode_val": "15",
+    },
+)
+COMPATIBILITY_URI: str = COMPATIBILITY_CONFIG.get(
+    "uri",
+    NAMESPACES.get("msword", "http://schemas.microsoft.com/office/word"),
+)
 
 
 # --------------------------------
@@ -518,4 +605,36 @@ __all__ = [
     "name_to_tag",
     "get_tags_for_category",
     "get_schema_order",
+    "ROOT_PART",
+    "DOCUMENT_PART",
+    "STYLES_PART",
+    "NUMBERING_PART",
+    "SETTINGS_PART",
+    "WEB_SETTINGS_PART",
+    "FONTS_PART",
+    "THEME_PART",
+    "FOOTNOTES_PART",
+    "ENDNOTES_PART",
+    "COMMENTS_PART",
+    "COMMENTS_EXTENDED_PART",
+    "COMMENTS_IDS_PART",
+    "GLOSSARY_PART",
+    "CORE_PROPERTIES_PART",
+    "APP_PROPERTIES_PART",
+    "CUSTOM_PROPERTIES_PART",
+    "DOCUMENT_RELATIONSHIPS_PART",
+    "PACKAGE_RELATIONSHIPS_PART",
+    "CONTENT_TYPES_PART",
+    "HEADERS_PATTERN",
+    "FOOTERS_PATTERN",
+    "MEDIA_DIR",
+    "CONTENT_TYPES_NAMESPACE",
+    "CONTENT_TYPES_DEFAULTS",
+    "CONTENT_TYPES_OVERRIDES",
+    "CONTENT_TYPE_HEADER",
+    "CONTENT_TYPE_FOOTER",
+    "COMPATIBILITY_CONFIG",
+    "COMPATIBILITY_URI",
+    "DEFAULT_ENCODING",
+    "JSON_CONFIG",
 ]

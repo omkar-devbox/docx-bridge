@@ -31,10 +31,35 @@ class RelationshipsHandler(BaseHandler):
         "",
     )
 
+    def __init__(self, relationships_config: dict[str, Any] | None = None):
+        self.relationships_config = relationships_config or {}
+        self.rel_types = self.relationships_config.get("types") or RELATIONSHIP_TYPES
+        self.uri_to_short_type = {
+            uri: short_type
+            for short_type, uri in self.rel_types.items()
+        }
+        self.internal_plumbing_targets = set(
+            self.relationships_config.get("internal_plumbing_targets") or INTERNAL_PLUMBING_TARGETS
+        )
 
     # --------------------------------
     # Relationship Type Helper
     # --------------------------------
+
+    def get_short_type(
+        self,
+        raw_type: str,
+    ) -> str:
+        if raw_type in self.uri_to_short_type:
+            return self.uri_to_short_type[raw_type]
+
+        if raw_type in URI_TO_SHORT_TYPE:
+            return URI_TO_SHORT_TYPE[raw_type]
+
+        if "/" in raw_type:
+            return raw_type.rsplit("/", 1)[-1]
+
+        return raw_type
 
     @staticmethod
     def _get_short_type(
@@ -58,6 +83,29 @@ class RelationshipsHandler(BaseHandler):
     # --------------------------------
     # Simple Mode Filter
     # --------------------------------
+
+    def is_internal_plumbing(
+        self,
+        target: str,
+        short_type: str,
+    ) -> bool:
+        if target in self.internal_plumbing_targets:
+            return True
+
+        if target in INTERNAL_PLUMBING_TARGETS:
+            return True
+
+        if target.startswith("theme/"):
+            return True
+
+        return short_type in (
+            "styles",
+            "numbering",
+            "theme",
+            "settings",
+            "webSettings",
+            "fontTable",
+        )
 
     @staticmethod
     def _is_internal_plumbing(
@@ -115,15 +163,19 @@ class RelationshipsHandler(BaseHandler):
                 "",
             )
 
-            short_type = self._get_short_type(
-                raw_type
+            short_type = (
+                self.get_short_type(raw_type)
+                if hasattr(self, "get_short_type")
+                else self._get_short_type(raw_type)
             )
 
             # Hide internal OpenXML plumbing in simple mode.
-            if simple and self._is_internal_plumbing(
-                target,
-                short_type,
-            ):
+            is_plumbing = (
+                self.is_internal_plumbing(target, short_type)
+                if hasattr(self, "is_internal_plumbing")
+                else self._is_internal_plumbing(target, short_type)
+            )
+            if simple and is_plumbing:
                 continue
 
             entry: dict[str, Any] = {
@@ -269,6 +321,24 @@ class RelationshipsHandler(BaseHandler):
     # Relationship Type Resolution
     # --------------------------------
 
+    def resolve_relationship_type(
+        self,
+        relationship: dict[str, Any],
+    ) -> str:
+
+        relationship_type = relationship.get(
+            "type",
+            "image",
+        )
+
+        if hasattr(self, "rel_types") and relationship_type in self.rel_types:
+            return self.rel_types[relationship_type]
+
+        return REL_TYPE_MAP.get(
+            relationship_type,
+            relationship_type,
+        )
+
     @staticmethod
     def _resolve_relationship_type(
         relationship: dict[str, Any],
@@ -381,7 +451,9 @@ class RelationshipsHandler(BaseHandler):
                 next_rid_number += 1
 
             full_type = (
-                self._resolve_relationship_type(
+                self.resolve_relationship_type(relationship)
+                if hasattr(self, "resolve_relationship_type")
+                else self._resolve_relationship_type(
                     relationship
                 )
             )

@@ -43,6 +43,7 @@
       "target": "word/document.xml"
     }
   ],
+  "document_relationships": "word/_rels/document.xml.rels",
   "internal_plumbing_targets": [
     "styles.xml",
     "numbering.xml",

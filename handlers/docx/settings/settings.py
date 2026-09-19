@@ -3,6 +3,7 @@
 from typing import Any
 import xml.etree.ElementTree as ET
 
+from config import COMPATIBILITY_CONFIG, COMPATIBILITY_URI
 from handlers.docx.base import BaseHandler, qn, local_name
 
 
@@ -138,7 +139,7 @@ class SettingsHandler(BaseHandler):
                         qn("w:compatSetting"),
                         {
                             qn("w:name"): k,
-                            qn("w:uri"): "http://schemas.microsoft.com/office/word",
+                            qn("w:uri"): COMPATIBILITY_URI,
                             qn("w:val"): str(val),
                         },
                     )
@@ -148,9 +149,9 @@ class SettingsHandler(BaseHandler):
                 compat,
                 qn("w:compatSetting"),
                 {
-                    qn("w:name"): "compatibilityMode",
-                    qn("w:uri"): "http://schemas.microsoft.com/office/word",
-                    qn("w:val"): "15",
+                    qn("w:name"): COMPATIBILITY_CONFIG.get("default_mode_name", "compatibilityMode"),
+                    qn("w:uri"): COMPATIBILITY_URI,
+                    qn("w:val"): str(COMPATIBILITY_CONFIG.get("default_mode_val", "15")),
                 },
             )
 

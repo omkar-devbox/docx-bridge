@@ -121,6 +121,12 @@ class BaseHandler(CommonBaseHandler):
     A_NS = NAMESPACES.get("a", "")  # DrawingML namespace
     PIC_NS = NAMESPACES.get("pic", "")  # Picture namespace
     REL_NS = NAMESPACES.get("rel", "")  # Package relationship namespace
+    CP_NS = NAMESPACES.get("cp", "")  # Core properties namespace
+    EP_NS = NAMESPACES.get("ep", "")  # Extended properties namespace
+    M_NS = NAMESPACES.get("m", "")  # Office Math namespace
+    DGM_NS = NAMESPACES.get("dgm", "")  # Diagram namespace
+    C_NS = NAMESPACES.get("c", "")  # Chart namespace
+    VT_NS = NAMESPACES.get("vt", "")  # DocProps VTypes namespace
 
 
     # --------------------------------

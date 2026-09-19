@@ -12,13 +12,24 @@ def docx_to_json(
     docx_path: Path | str,
     output_path: Path | str,
     mode: str = "simple",
+    docx_config: dict[str, Any] | None = None,
+    content_types_config: dict[str, Any] | None = None,
+    relationships_config: dict[str, Any] | None = None,
 ) -> None:
     """Convert a DOCX package to structured JSON format."""
     docx_path = Path(docx_path)
     output_path = Path(output_path)
 
-    with DocxReader(docx_path) as reader:
-        parser = XmlToJsonParser()
+    with DocxReader(
+        docx_path,
+        docx_config=docx_config,
+        content_types_config=content_types_config,
+    ) as reader:
+        parser = XmlToJsonParser(
+            docx_config=docx_config,
+            content_types_config=content_types_config,
+            relationships_config=relationships_config,
+        )
 
         # Parse main document
         doc_xml = reader.get_document_xml()

@@ -3,30 +3,81 @@
 from pathlib import Path
 from typing import Any
 
+from config import (
+    APP_PROPERTIES_PART,
+    COMMENTS_PART,
+    CONTENT_TYPES_DATA,
+    CONTENT_TYPES_DEFAULTS,
+    CONTENT_TYPES_NAMESPACE,
+    CONTENT_TYPES_OVERRIDES,
+    CONTENT_TYPE_FOOTER,
+    CONTENT_TYPE_HEADER,
+    CORE_PROPERTIES_PART,
+    DOCX_CONFIG_DATA,
+    DOCUMENT_PART,
+    DOCUMENT_RELATIONSHIPS_NS,
+    DOCUMENT_RELATIONSHIPS_PART,
+    ENDNOTES_PART,
+    FOOTNOTES_PART,
+    INTERNAL_PLUMBING_TARGETS,
+    MEDIA_DIR,
+    NUMBERING_PART,
+    PACKAGE_RELATIONSHIPS_NS,
+    RELATIONSHIPS_DATA,
+    RELATIONSHIP_TYPES,
+    SETTINGS_PART,
+    STYLES_PART,
+    WEB_SETTINGS_PART,
+    XML_DECLARATION,
+)
 from formats.docx.reader import DocxReader
 from formats.docx.writer import DocxWriter
 from parser.docx.xml_to_json import XmlToJsonParser
 
 
-def build_root_relationships(has_metadata: bool = True) -> str:
+def build_root_relationships(
+    has_metadata: bool = True,
+    relationships_data: dict[str, Any] | None = None,
+    content_types_data: dict[str, Any] | None = None,
+    docx_config: dict[str, Any] | None = None,
+) -> str:
     """Return standard root .rels XML content."""
+    xml_decl = (
+        (docx_config or DOCX_CONFIG_DATA).get("xml_declaration")
+        or XML_DECLARATION
+    )
+    rels_ns = (
+        (relationships_data or RELATIONSHIPS_DATA).get("namespaces", {}).get("package")
+        or PACKAGE_RELATIONSHIPS_NS
+    )
+    rel_types = (relationships_data or RELATIONSHIPS_DATA).get("types", RELATIONSHIP_TYPES)
+    ct_data = content_types_data or CONTENT_TYPES_DATA
+
+    doc_target = (
+        ct_data.get("document")
+        or (docx_config or DOCX_CONFIG_DATA).get("root_part")
+        or DOCUMENT_PART
+    )
+    core_target = ct_data.get("core_properties") or CORE_PROPERTIES_PART
+    app_target = ct_data.get("app_properties") or APP_PROPERTIES_PART
+
     lines = [
-        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
-        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">',
-        '  <Relationship Id="rId1" '
-        'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" '
-        'Target="word/document.xml"/>',
+        xml_decl,
+        f'<Relationships xmlns="{rels_ns}">',
+        f'  <Relationship Id="rId1" '
+        f'Type="{rel_types.get("officeDocument", "")}" '
+        f'Target="{doc_target}"/>',
     ]
     if has_metadata:
         lines.append(
-            '  <Relationship Id="rId2" '
-            'Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" '
-            'Target="docProps/core.xml"/>'
+            f'  <Relationship Id="rId2" '
+            f'Type="{rel_types.get("coreProperties", "")}" '
+            f'Target="{core_target}"/>'
         )
         lines.append(
-            '  <Relationship Id="rId3" '
-            'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" '
-            'Target="docProps/app.xml"/>'
+            f'  <Relationship Id="rId3" '
+            f'Type="{rel_types.get("extendedProperties", "")}" '
+            f'Target="{app_target}"/>'
         )
     lines.append('</Relationships>')
     return '\n'.join(lines)
@@ -35,72 +86,68 @@ def build_root_relationships(has_metadata: bool = True) -> str:
 def build_content_types_xml(
     data: dict[str, Any],
     extra_parts: list[str] | None = None,
+    content_types_data: dict[str, Any] | None = None,
+    docx_config: dict[str, Any] | None = None,
 ) -> str:
     """Return standard [Content_Types].xml content based on data elements and written parts."""
+    ct_data = content_types_data or CONTENT_TYPES_DATA
+    xml_decl = (
+        (docx_config or DOCX_CONFIG_DATA).get("xml_declaration")
+        or XML_DECLARATION
+    )
+    ns = ct_data.get("namespace") or CONTENT_TYPES_NAMESPACE
+    defaults = ct_data.get("defaults") or CONTENT_TYPES_DEFAULTS
+    overrides = ct_data.get("overrides") or CONTENT_TYPES_OVERRIDES
+    header_ct = ct_data.get("content_types", {}).get("header") or CONTENT_TYPE_HEADER
+    footer_ct = ct_data.get("content_types", {}).get("footer") or CONTENT_TYPE_FOOTER
+
     content_types_lines = [
-        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
-        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">',
-        '  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>',
-        '  <Default Extension="xml" ContentType="application/xml"/>',
-        '  <Default Extension="png" ContentType="image/png"/>',
-        '  <Default Extension="jpeg" ContentType="image/jpeg"/>',
-        '  <Default Extension="jpg" ContentType="image/jpeg"/>',
-        '  <Default Extension="gif" ContentType="image/gif"/>',
-        '  <Default Extension="emf" ContentType="image/x-emf"/>',
-        '  <Default Extension="wmf" ContentType="image/x-wmf"/>',
-        '  <Override PartName="/word/document.xml" '
-        'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>',
+        xml_decl,
+        f'<Types xmlns="{ns}">',
     ]
 
-    # Core & extended properties
-    content_types_lines.append(
-        '  <Override PartName="/docProps/core.xml" '
-        'ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>'
-    )
-    content_types_lines.append(
-        '  <Override PartName="/docProps/app.xml" '
-        'ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>'
-    )
+    for ext, ct in defaults.items():
+        content_types_lines.append(f'  <Default Extension="{ext}" ContentType="{ct}"/>')
 
-    # Settings
-    content_types_lines.append(
-        '  <Override PartName="/word/settings.xml" '
-        'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>'
+    def add_override(part_name: str) -> None:
+        key = "/" + part_name.lstrip("/")
+        ct = overrides.get(key)
+        if ct:
+            content_types_lines.append(
+                f'  <Override PartName="{key}" ContentType="{ct}"/>'
+            )
+
+    doc_part = (
+        ct_data.get("document")
+        or (docx_config or DOCX_CONFIG_DATA).get("root_part")
+        or DOCUMENT_PART
     )
-    content_types_lines.append(
-        '  <Override PartName="/word/webSettings.xml" '
-        'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml"/>'
-    )
+    core_part = ct_data.get("core_properties") or CORE_PROPERTIES_PART
+    app_part = ct_data.get("app_properties") or APP_PROPERTIES_PART
+    settings_part = ct_data.get("settings") or SETTINGS_PART
+    web_settings_part = ct_data.get("web_settings") or WEB_SETTINGS_PART
+
+    # Core & Document overrides
+    add_override(doc_part)
+    add_override(core_part)
+    add_override(app_part)
+    add_override(settings_part)
+    add_override(web_settings_part)
 
     if "styles" in data:
-        content_types_lines.append(
-            '  <Override PartName="/word/styles.xml" '
-            'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'
-        )
+        add_override(ct_data.get("styles") or STYLES_PART)
 
     if "numbering" in data:
-        content_types_lines.append(
-            '  <Override PartName="/word/numbering.xml" '
-            'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/>'
-        )
+        add_override(ct_data.get("numbering") or NUMBERING_PART)
 
     if "footnotes" in data:
-        content_types_lines.append(
-            '  <Override PartName="/word/footnotes.xml" '
-            'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml"/>'
-        )
+        add_override(ct_data.get("footnotes") or FOOTNOTES_PART)
 
     if "endnotes" in data:
-        content_types_lines.append(
-            '  <Override PartName="/word/endnotes.xml" '
-            'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml"/>'
-        )
+        add_override(ct_data.get("endnotes") or ENDNOTES_PART)
 
     if "comments" in data:
-        content_types_lines.append(
-            '  <Override PartName="/word/comments.xml" '
-            'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"/>'
-        )
+        add_override(ct_data.get("comments") or COMMENTS_PART)
 
     # Extra parts like headers/footers
     if extra_parts:
@@ -109,12 +156,12 @@ def build_content_types_xml(
             if "header" in part and part.endswith(".xml"):
                 content_types_lines.append(
                     f'  <Override PartName="{clean_part}" '
-                    'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/>'
+                    f'ContentType="{header_ct}"/>'
                 )
             elif "footer" in part and part.endswith(".xml"):
                 content_types_lines.append(
                     f'  <Override PartName="{clean_part}" '
-                    'ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>'
+                    f'ContentType="{footer_ct}"/>'
                 )
 
     content_types_lines.append("</Types>")
@@ -125,23 +172,38 @@ def copy_template_parts(
     template_docx: Path,
     writer: DocxWriter,
     exclude_parts: set[str] | None = None,
+    content_types_data: dict[str, Any] | None = None,
+    docx_config: dict[str, Any] | None = None,
 ) -> set[str]:
     """Copy non-generated parts from a template DOCX archive into writer."""
+    ct_data = content_types_data or CONTENT_TYPES_DATA
+    d_config = docx_config or DOCX_CONFIG_DATA
+
+    doc_part = ct_data.get("document") or d_config.get("root_part") or DOCUMENT_PART
+    styles_part = ct_data.get("styles") or STYLES_PART
+    num_part = ct_data.get("numbering") or NUMBERING_PART
+    rels_part = (
+        ct_data.get("document_relationships")
+        or d_config.get("document_relationships_part")
+        or DOCUMENT_RELATIONSHIPS_PART
+    )
+    media_dir = ct_data.get("media_dir") or d_config.get("media_dir") or MEDIA_DIR
+
     copied_parts: set[str] = set()
     excludes = exclude_parts or set()
 
-    with DocxReader(template_docx) as reader:
+    with DocxReader(template_docx, docx_config=d_config, content_types_config=ct_data) as reader:
         for part_name in reader.list_parts():
             if (
                 part_name
                 not in (
-                    "word/document.xml",
-                    "word/styles.xml",
-                    "word/numbering.xml",
-                    "word/_rels/document.xml.rels",
+                    doc_part,
+                    styles_part,
+                    num_part,
+                    rels_part,
                 )
                 and part_name not in excludes
-                and not part_name.startswith("word/media/")
+                and not part_name.startswith(media_dir)
             ):
                 writer.write_part(
                     part_name,
@@ -155,14 +217,28 @@ def copy_template_parts(
 def merge_template_relationships(
     template_docx: Path,
     rels_list: list[dict[str, Any]],
+    relationships_data: dict[str, Any] | None = None,
+    content_types_data: dict[str, Any] | None = None,
+    docx_config: dict[str, Any] | None = None,
 ) -> None:
     """Preserve internal relationships (theme, settings, fonts) from template archive."""
-    with DocxReader(template_docx) as reader:
+    rel_data = relationships_data or RELATIONSHIPS_DATA
+    plumbing = set(rel_data.get("internal_plumbing_targets", INTERNAL_PLUMBING_TARGETS))
+
+    with DocxReader(
+        template_docx,
+        docx_config=docx_config,
+        content_types_config=content_types_data,
+    ) as reader:
         template_rels_xml = reader.get_relationships_xml()
         if not template_rels_xml:
             return
 
-        template_rels = XmlToJsonParser().parse_relationships(
+        template_rels = XmlToJsonParser(
+            docx_config=docx_config,
+            content_types_config=content_types_data,
+            relationships_config=relationships_data,
+        ).parse_relationships(
             template_rels_xml,
             mode="raw",
         )
@@ -185,15 +261,7 @@ def merge_template_relationships(
                 template_id not in existing_rids
                 and target not in existing_targets
                 and (
-                    target
-                    in (
-                        "theme/theme1.xml",
-                        "settings.xml",
-                        "webSettings.xml",
-                        "fontTable.xml",
-                        "styles.xml",
-                        "numbering.xml",
-                    )
+                    target in plumbing
                     or "theme" in rel_type
                     or "settings" in rel_type
                     or "fontTable" in rel_type
@@ -211,8 +279,15 @@ def merge_template_relationships(
 def ensure_package_relationships(
     rels_list: list[dict[str, Any]],
     data: dict[str, Any],
+    relationships_data: dict[str, Any] | None = None,
+    content_types_data: dict[str, Any] | None = None,
 ) -> None:
     """Ensure numbering, styles, settings, and notes relationships exist in rels_list if required."""
+    ct_data = content_types_data or CONTENT_TYPES_DATA
+    rel_data = relationships_data or RELATIONSHIPS_DATA
+    rel_ns = rel_data.get("namespaces", {}).get("document") or DOCUMENT_RELATIONSHIPS_NS
+    rel_types = rel_data.get("types", RELATIONSHIP_TYPES)
+
     existing_targets = {rel.get("target", "") for rel in rels_list}
 
     used_ids: set[int] = set()
@@ -226,10 +301,14 @@ def ensure_package_relationships(
     def add_rel(rel_type_suffix: str, target: str) -> None:
         nonlocal next_rid_num
         if target not in existing_targets:
+            rel_type = rel_types.get(
+                rel_type_suffix,
+                f"{rel_ns}/{rel_type_suffix}",
+            )
             rels_list.append(
                 {
                     "id": f"rId{next_rid_num}",
-                    "type": f"http://schemas.openxmlformats.org/officeDocument/2006/relationships/{rel_type_suffix}",
+                    "type": rel_type,
                     "target": target,
                 }
             )
@@ -237,19 +316,19 @@ def ensure_package_relationships(
             next_rid_num += 1
 
     if "numbering" in data:
-        add_rel("numbering", "numbering.xml")
+        add_rel("numbering", Path(ct_data.get("numbering") or NUMBERING_PART).name)
 
     if "styles" in data:
-        add_rel("styles", "styles.xml")
+        add_rel("styles", Path(ct_data.get("styles") or STYLES_PART).name)
 
     if "footnotes" in data:
-        add_rel("footnotes", "footnotes.xml")
+        add_rel("footnotes", Path(ct_data.get("footnotes") or FOOTNOTES_PART).name)
 
     if "endnotes" in data:
-        add_rel("endnotes", "endnotes.xml")
+        add_rel("endnotes", Path(ct_data.get("endnotes") or ENDNOTES_PART).name)
 
     if "comments" in data:
-        add_rel("comments", "comments.xml")
+        add_rel("comments", Path(ct_data.get("comments") or COMMENTS_PART).name)
 
     # Header and footer relationships
     if "headers" in data:
@@ -283,8 +362,8 @@ def ensure_package_relationships(
                 add_rel("footer", target)
 
     # Standard settings for document compatibility
-    add_rel("settings", "settings.xml")
-    add_rel("webSettings", "webSettings.xml")
+    add_rel("settings", Path(ct_data.get("settings") or SETTINGS_PART).name)
+    add_rel("webSettings", Path(ct_data.get("web_settings") or WEB_SETTINGS_PART).name)
 
 
 def filter_standalone_relationships(
@@ -293,10 +372,22 @@ def filter_standalone_relationships(
     media_targets: set[str],
     copied_parts: set[str],
     extra_targets: set[str] | None = None,
+    content_types_data: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Filter relationship list for standalone documents without a template."""
+    ct_data = content_types_data or CONTENT_TYPES_DATA
     filtered_rels: list[dict[str, Any]] = []
     extras = extra_targets or set()
+    media_dir = ct_data.get("media_dir") or MEDIA_DIR
+    media_prefix = media_dir.lstrip("word/").rstrip("/")
+
+    styles_name = Path(ct_data.get("styles") or STYLES_PART).name
+    numbering_name = Path(ct_data.get("numbering") or NUMBERING_PART).name
+    settings_name = Path(ct_data.get("settings") or SETTINGS_PART).name
+    web_settings_name = Path(ct_data.get("web_settings") or WEB_SETTINGS_PART).name
+    footnotes_name = Path(ct_data.get("footnotes") or FOOTNOTES_PART).name
+    endnotes_name = Path(ct_data.get("endnotes") or ENDNOTES_PART).name
+    comments_name = Path(ct_data.get("comments") or COMMENTS_PART).name
 
     for rel in rels_list:
         target = rel.get("target", "")
@@ -304,28 +395,28 @@ def filter_standalone_relationships(
         if rel.get("targetMode") == "External":
             filtered_rels.append(rel)
 
-        elif target in media_targets or f"media/{target}" in media_targets:
+        elif target in media_targets or f"{media_prefix}/{target}" in media_targets:
             filtered_rels.append(rel)
 
         elif target in extras or f"word/{target}" in extras:
             filtered_rels.append(rel)
 
-        elif target == "styles.xml" and "styles" in data:
+        elif target == styles_name and "styles" in data:
             filtered_rels.append(rel)
 
-        elif target == "numbering.xml" and "numbering" in data:
+        elif target == numbering_name and "numbering" in data:
             filtered_rels.append(rel)
 
-        elif target in ("settings.xml", "webSettings.xml"):
+        elif target in (settings_name, web_settings_name):
             filtered_rels.append(rel)
 
-        elif target == "footnotes.xml" and "footnotes" in data:
+        elif target == footnotes_name and "footnotes" in data:
             filtered_rels.append(rel)
 
-        elif target == "endnotes.xml" and "endnotes" in data:
+        elif target == endnotes_name and "endnotes" in data:
             filtered_rels.append(rel)
 
-        elif target == "comments.xml" and "comments" in data:
+        elif target == comments_name and "comments" in data:
             filtered_rels.append(rel)
 
         elif target.startswith("header") or target.startswith("footer"):

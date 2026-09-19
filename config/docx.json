@@ -1,6 +1,19 @@
 {
+  "encoding": "utf-8",
   "xml_declaration": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>",
+  "json": {
+    "indent": 2,
+    "ensure_ascii": false,
+    "encoding": "utf-8"
+  },
   "root_part": "word/document.xml",
+  "document_relationships_part": "word/_rels/document.xml.rels",
+  "media_dir": "word/media/",
+  "compatibility": {
+    "uri": "http://schemas.microsoft.com/office/word",
+    "default_mode_name": "compatibilityMode",
+    "default_mode_val": "15"
+  },
   "core_parts": [
     "word/document.xml",
     "word/styles.xml",
